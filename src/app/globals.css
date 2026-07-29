@@ -1,11 +1,96 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import "../styles/index.css";
 
 @custom-variant dark (&:is(.dark *));
 
 
 @theme inline {
+    --color-primary-50: var(--primary-50);
+    --color-primary-100: var(--primary-100);
+    --color-primary-200: var(--primary-200);
+    --color-primary-300: var(--primary-300);
+    --color-primary-400: var(--primary-400);
+    --color-primary-500: var(--primary-500);
+    --color-primary-600: var(--primary-600);
+    --color-primary-700: var(--primary-700);
+    --color-primary-800: var(--primary-800);
+    --color-primary-900: var(--primary-900);
+    --color-primary-950: var(--primary-950);
+
+
+    --color-secondary-50: var(--secondary-50);
+    --color-secondary-100: var(--secondary-100);
+    --color-secondary-200: var(--secondary-200);
+    --color-secondary-300: var(--secondary-300);
+    --color-secondary-400: var(--secondary-400);
+    --color-secondary-500: var(--secondary-500);
+    --color-secondary-600: var(--secondary-600);
+    --color-secondary-700: var(--secondary-700);
+    --color-secondary-800: var(--secondary-800);
+    --color-secondary-900: var(--secondary-900);
+
+
+    --color-neutral-50: var(--neutral-50);
+    --color-neutral-100: var(--neutral-100);
+    --color-neutral-200: var(--neutral-200);
+    --color-neutral-300: var(--neutral-300);
+    --color-neutral-400: var(--neutral-400);
+    --color-neutral-500: var(--neutral-500);
+    --color-neutral-600: var(--neutral-600);
+    --color-neutral-700: var(--neutral-700);
+    --color-neutral-800: var(--neutral-800);
+    --color-neutral-900: var(--neutral-900);
+    --color-neutral-950: var(--neutral-950);
+
+
+    --color-warning-50: var(--warning-50);
+    --color-warning-100: var(--warning-100);
+    --color-warning-200: var(--warning-200);
+    --color-warning-300: var(--warning-300);
+    --color-warning-400: var(--warning-400);
+    --color-warning-500: var(--warning-500);
+    --color-warning-600: var(--warning-600);
+    --color-warning-700: var(--warning-700);
+    --color-warning-800: var(--warning-800);
+    --color-warning-900: var(--warning-900);
+
+    --color-success-50: var(--success-50);
+    --color-success-100: var(--success-100);
+    --color-success-200: var(--success-200);
+    --color-success-300: var(--success-300);
+    --color-success-400: var(--success-400);
+    --color-success-500: var(--success-500);
+    --color-success-600: var(--success-600);
+    --color-success-700: var(--success-700);
+    --color-success-800: var(--success-800);
+    --color-success-900: var(--success-900);
+
+    --color-info-50: var(--info-50);
+    --color-info-100: var(--info-100);
+    --color-info-200: var(--info-200);
+    --color-info-300: var(--info-300);
+    --color-info-400: var(--info-400);
+    --color-info-500: var(--info-500);
+    --color-info-600: var(--info-600);
+    --color-info-700: var(--info-700);
+    --color-info-800: var(--info-800);
+    --color-info-900: var(--info-900);
+
+    --color-danger-50: var(--danger-50);
+    --color-danger-100: var(--danger-100);
+    --color-danger-200: var(--danger-200);
+    --color-danger-300: var(--danger-300);
+    --color-danger-400: var(--danger-400);
+    --color-danger-500: var(--danger-500);
+    --color-danger-600: var(--danger-600);
+    --color-danger-700: var(--danger-700);
+    --color-danger-800: var(--danger-800);
+    --color-danger-900: var(--danger-900);
+
+
+    --color-brand: var(--primary-600);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --font-inter: var(--font-inter);
@@ -32,10 +117,10 @@
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
     --color-muted: var(--muted);
+    --color-secondary : var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
+    --color-primary : var(--primary);
     --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
     --color-popover-foreground: var(--popover-foreground);
     --color-popover: var(--popover);
     --color-card-foreground: var(--card-foreground);
@@ -49,118 +134,9 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
 
-    --success: oklch(0.70 0.18 155);
-    --success-foreground: oklch(0.985 0 0);
-    --warning: oklch(0.83 0.17 84);
-    --warning-foreground: oklch(0.145 0 0);
-    --destructive: oklch(0.63 0.24 27);
-    --destructive-foreground: oklch(0.985 0 0);
-    --info: oklch(0.70 0.16 235);
-    --info-foreground: oklch(0.985 0 0);
+    --breakpoint-xs: 390px;
 }
 
-:root {
-    --background: oklch(0.985 0.003 264);
-    --foreground: oklch(0.205 0.015 264);
-
-    --card: oklch(1 0 0);
-    --card-foreground: var(--foreground);
-
-    --popover: var(--card);
-    --popover-foreground: var(--foreground);
-
-    --primary: oklch(0.56 0.22 275);
-    --primary-foreground: oklch(0.985 0 0);
-
-    --secondary: oklch(0.96 0.006 264);
-    --secondary-foreground: var(--foreground);
-
-    --muted: oklch(0.965 0.004 264);
-    --muted-foreground: oklch(0.55 0.02 264);
-
-    --accent: oklch(0.96 0.006 264);
-    --accent-foreground: var(--foreground);
-
-    --border: oklch(0.91 0.005 264);
-    --input: var(--border);
-
-    --ring: var(--primary);
-
-    --radius: .75rem;
-
-    --destructive: oklch(0.577 0.245 27.325);
-    --chart-1: var(--primary);
-    --chart-2: oklch(0.70 0.18 155);
-    --chart-3: oklch(0.83 0.17 84);
-    --chart-4: oklch(0.63 0.24 27);
-    --chart-5: oklch(0.70 0.16 235);
-
-    --sidebar: var(--card);
-
-    --sidebar-foreground: var(--foreground);
-
-    --sidebar-primary: var(--primary);
-
-    --sidebar-primary-foreground: var(--primary-foreground);
-
-    --sidebar-accent: var(--muted);
-
-    --sidebar-accent-foreground: var(--foreground);
-
-    --sidebar-border: var(--border);
-
-    --sidebar-ring: var(--ring);
-}
-
-.dark {
-    --background: oklch(0.17 0.01 264);
-    --foreground: oklch(0.98 0 0);
-
-    --card: oklch(0.21 0.01 264);
-    --card-foreground: var(--foreground);
-
-    --popover: var(--card);
-    --popover-foreground: var(--foreground);
-
-    --primary: oklch(0.56 0.22 275);
-    --primary-foreground: oklch(0.985 0 0);
-
-    --secondary: oklch(0.27 0.01 264);
-    --secondary-foreground: var(--foreground);
-
-    --muted: oklch(0.27 0.01 264);
-    --muted-foreground: oklch(0.72 0.01 264);
-
-    --accent: oklch(0.27 0.01 264);
-    --accent-foreground: var(--foreground);
-
-    --border: oklch(0.32 0.01 264);
-    --input: var(--border);
-
-    --ring: var(--primary);
-
-    --chart-1: var(--primary);
-    --chart-2: oklch(0.70 0.18 155);
-    --chart-3: oklch(0.83 0.17 84);
-    --chart-4: oklch(0.63 0.24 27);
-    --chart-5: oklch(0.70 0.16 235);
-
-    --sidebar: var(--card);
-
-    --sidebar-foreground: var(--foreground);
-
-    --sidebar-primary: var(--primary);
-
-    --sidebar-primary-foreground: var(--primary-foreground);
-
-    --sidebar-accent: var(--muted);
-
-    --sidebar-accent-foreground: var(--foreground);
-
-    --sidebar-border: var(--border);
-
-    --sidebar-ring: var(--ring);
-}
 
 @layer base {
     * {
