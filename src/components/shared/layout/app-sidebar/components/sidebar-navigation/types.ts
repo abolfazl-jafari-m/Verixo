@@ -1,5 +1,18 @@
 import type { LucideIcon } from "lucide-react";
 
+export type NavigationLabel =
+  | "salesManagement"
+  | "finance"
+  | "account"
+  | "products"
+  | "orders"
+  | "customers"
+  | "reports"
+  | "invoices"
+  | "payments"
+  | "settings"
+  | "support";
+
 export type SidebarStats = {
   products: number;
   orders: number;
@@ -7,13 +20,14 @@ export type SidebarStats = {
 };
 
 type MenuItem = {
-  title: string;
+  title: NavigationLabel;
   url: string;
-  getDescription?: (stats: SidebarStats) => string;
+  descriptionKey?: "activeProducts" | "orderCount" | "customerCount";
+  statKey?: keyof SidebarStats;
   icon: LucideIcon;
 };
 
 export type Menu = {
-  title: string;
+  titleKey: NavigationLabel;
   items?: MenuItem[];
 };

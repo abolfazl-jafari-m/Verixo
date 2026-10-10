@@ -1,3 +1,159 @@
 {
-
+  "splash": {
+    "eyebrow": "مدیریت سفارش، ساده و یک‌جا",
+    "title": "فروشگاهتان را با آرامش مدیریت کنید.",
+    "description": "سفارش‌ها، پرداخت‌ها و ارسال‌ها را در یک فضای روشن و منظم پیگیری کنید.",
+    "cta": "شروع رایگان",
+    "login": "ورود",
+    "benefitOne": "بدون نیاز به کارت بانکی",
+    "benefitTwo": "راه‌اندازی در چند دقیقه",
+    "benefitThree": "مناسب فروشگاه‌های کوچک",
+    "previewEyebrow": "امروز در فروشگاه",
+    "previewTitle": "نمای کلی عملیات",
+    "previewStatus": "همه‌چیز مرتب است",
+    "orders": "سفارش جدید",
+    "sales": "فروش امروز",
+    "chartTitle": "روند فروش هفته"
+  },
+  "auth": {
+    "validation": { "phone": "یک شماره موبایل معتبر وارد کنید.", "otp": "کد تایید باید ۶ رقم باشد." },
+    "phone": { "label": "شماره موبایل", "placeholder": "۰۹۱۲ ۱۲۳ ۴۵۶۷", "continue": "دریافت کد تایید" },
+    "login": { "eyebrow": "خوش آمدید", "title": "به حساب خود وارد شوید", "description": "شماره موبایل خود را وارد کنید تا کد تایید برایتان ارسال شود.", "prompt": "حساب کاربری ندارید؟", "action": "ثبت‌نام کنید" },
+    "signup": { "eyebrow": "شروع کنید", "title": "حساب فروشگاهتان را بسازید", "description": "با شماره موبایل خود ثبت‌نام کنید و مدیریت سفارش‌ها را آغاز کنید.", "prompt": "حساب کاربری دارید؟", "action": "وارد شوید" },
+    "otp": { "back": "بازگشت", "eyebrow": "تایید شماره موبایل", "title": "کد تایید را وارد کنید", "description": "کد ۶ رقمی به شماره {phone} ارسال شد.", "phoneFallback": "شماره شما", "label": "کد تایید", "submit": "تایید و ادامه", "resendPrompt": "کدی دریافت نکردید؟", "resend": "ارسال دوباره" }
+  },
+  "dashboard": {
+    "salesOverview": {
+      "title": "فروش ماه جاری",
+      "growth": "۱۸٪ رشد",
+      "currentMonth": "ماه جاری",
+      "previousMonth": "ماه قبل",
+      "orders": "سفارشات",
+      "averageBasket": "میانگین سبد",
+      "newCustomers": "مشتری جدید"
+    },
+    "salesChart": {
+      "title": "روند فروش هفته",
+      "description": "فروش روزانه در هفت روز گذشته",
+      "revenue": "فروش",
+      "currency": "تومان",
+      "days": {
+        "saturday": "شنبه",
+        "sunday": "یکشنبه",
+        "monday": "دوشنبه",
+        "tuesday": "سه‌شنبه",
+        "wednesday": "چهارشنبه",
+        "thursday": "پنج‌شنبه",
+        "friday": "جمعه"
+      }
+    },
+    "orderStatusChart": {
+      "title": "وضعیت سفارش‌ها",
+      "description": "توزیع سفارش‌ها بر اساس مرحلهٔ فعلی",
+      "orders": "سفارش",
+      "new": "جدید",
+      "payment": "پرداخت",
+      "ready": "آماده‌ارسال",
+      "shipped": "ارسال‌شده"
+    },
+    "dailyFocus": {
+      "title": "اولویت‌های امروز",
+      "description": "کارهایی که سفارش‌ها را به مرحلهٔ بعد می‌برند",
+      "total": "{count} اقدام",
+      "invoice": "ارسال فاکتور",
+      "invoiceDescription": "سفارش‌های آمادهٔ اطلاع‌رسانی",
+      "payment": "تایید پرداخت",
+      "paymentDescription": "پرداخت‌های در انتظار بررسی",
+      "shipment": "آماده‌سازی ارسال",
+      "shipmentDescription": "سفارش‌های آمادهٔ تحویل"
+    },
+    "page": {
+      "eyebrow": "داشبورد فروشگاه",
+      "title": "نمای کلی عملیات",
+      "description": "فروش و سفارش‌های امروز را در یک نگاه پیگیری کنید.",
+      "salesSection": "خلاصه فروش",
+      "operationsSection": "عملیات سفارش",
+      "chartsSection": "تحلیل فروش",
+      "createOrder": "ثبت سفارش"
+    },
+    "kpi": {
+      "revenue": {
+        "label": "فروش ناخالص",
+        "comparison": "نسبت به ماه قبل"
+      },
+      "averageOrder": {
+        "label": "میانگین ارزش سفارش",
+        "comparison": "نسبت به ماه قبل"
+      },
+      "orders": {
+        "label": "کل سفارش‌ها",
+        "comparison": "نسبت به ماه قبل"
+      },
+      "customers": {
+        "label": "مشتریان جدید",
+        "comparison": "نسبت به ماه قبل"
+      }
+    },
+    "todaySummary": {
+      "title": "خلاصه امروز",
+      "newOrders": "سفارش جدید",
+      "fromYesterday": "۳ از دیروز",
+      "paymentConfirmation": "تایید پرداخت",
+      "pending": "۴ در انتظار",
+      "readyToShip": "آماده ارسال"
+    },
+    "shipments": {
+      "title": "ارسال‌های امروز",
+      "all": "همه",
+      "itemCount": "{count} مورد",
+      "preparing": "برای آماده‌سازی",
+      "packing": "بسته‌بندی",
+      "shipping": "تحویل پیک",
+      "completed": "تحویل مشتری"
+    },
+    "actions": {
+      "title": "نیاز به اقدام",
+      "all": "همه",
+      "itemCount": "{count} مورد",
+      "sendInvoice": "ارسال فاکتور",
+      "invoiceNotSent": "سفارش ثبت شد — فاکتور هنوز ارسال نشده",
+      "minutesAgo": "۱۲ دقیقه پیش",
+      "currency": "تومان",
+      "table": {
+        "order": "شماره سفارش",
+        "customer": "مشتری",
+        "issue": "اقدام موردنیاز",
+        "amount": "مبلغ",
+        "updatedAt": "آخرین تغییر",
+        "action": "عملیات"
+      }
+    }
+  },
+  "layout": {
+    "greeting": "سلام 👋",
+    "userName": "سینا رضایی",
+    "createOrder": "ثبت سفارش",
+    "mobileNavigation": {
+      "products": "محصولات",
+      "orders": "سفارش‌ها",
+      "reports": "گزارش",
+      "customers": "مشتریان"
+    },
+    "navigation": {
+      "salesManagement": "مدیریت فروش",
+      "finance": "مالی",
+      "account": "حساب کاربری",
+      "products": "محصولات",
+      "orders": "سفارش‌ها",
+      "customers": "مشتریان",
+      "reports": "گزارش‌ها",
+      "invoices": "فاکتورها",
+      "payments": "پرداخت‌ها",
+      "settings": "تنظیمات",
+      "support": "پشتیبانی",
+      "activeProducts": "{count} محصول فعال",
+      "orderCount": "{count} سفارش",
+      "customerCount": "{count} مشتری"
+    }
+  }
 }

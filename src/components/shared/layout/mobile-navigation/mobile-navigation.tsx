@@ -1,7 +1,10 @@
 import { MobileNavSvg, CtaAction, MobileNavigationLink } from "./components";
 import { mobileItems } from "./navigation-items";
+import { useTranslations } from "next-intl";
 
 function MobileNavigation() {
+  const t = useTranslations("layout.mobileNavigation");
+
   return (
     <div className={"fixed bottom-0 z-50 w-full md:hidden"}>
       <MobileNavSvg />
@@ -12,7 +15,7 @@ function MobileNavigation() {
           item.type === "link" ? (
             <MobileNavigationLink href={item.href} key={i}>
               <item.icon className={"w-5"} />
-              <p className={"text-xs text-nowrap"}>{item.title}</p>
+              <p className={"text-xs text-nowrap"}>{t(item.titleKey)}</p>
             </MobileNavigationLink>
           ) : (
             <div className={"w-14"} key={item.type} />

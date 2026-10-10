@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Link } from "@/lib/i18n/navigations";
 
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function AppSidebar({
   className,
@@ -22,6 +23,8 @@ function AppSidebar({
   variant?: "sidebar" | "floating" | "inset";
   collapsible?: "offcanvas" | "icon" | "none";
 }) {
+  const t = useTranslations("layout");
+
   return (
     <Sidebar
       variant={variant}
@@ -38,7 +41,7 @@ function AppSidebar({
             "bg-primary-600 dark:bg-primary-800 shadow-primary-900 flex items-center justify-center gap-2 rounded-sm px-4 py-2 text-white shadow-[0_4px_4px]"
           }
         >
-          <p className={"text-sm"}>ثبت سفارش</p>
+          <p className={"text-sm"}>{t("createOrder")}</p>
           <Plus size={12} />
         </Link>
       </SidebarHeader>

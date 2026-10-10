@@ -12,58 +12,61 @@ import type { Menu } from "./types";
 
 export const menu: Menu[] = [
   {
-    title: "مدیریت فروش",
+    titleKey: "salesManagement",
     items: [
       {
-        title: "محصولات",
+        title: "products",
         url: "/products",
         icon: Package,
-        getDescription: (stats) => `${stats.products} محصول فعال`,
+        descriptionKey: "activeProducts",
+        statKey: "products",
       },
       {
-        title: "سفارش‌ها",
+        title: "orders",
         url: "/orders",
         icon: ShoppingCart,
-        getDescription: (stats) => `${stats.orders} سفارش`,
+        descriptionKey: "orderCount",
+        statKey: "orders",
       },
       {
-        title: "مشتریان",
+        title: "customers",
         url: "/customers",
         icon: Users,
-        getDescription: (stats) => `${stats.customers} مشتری`,
+        descriptionKey: "customerCount",
+        statKey: "customers",
       },
     ],
   },
   {
-    title: "مالی",
+    titleKey: "finance",
     items: [
       {
-        title: "گزارش‌ها",
+        title: "reports",
         url: "/reports",
         icon: ChartBar,
       },
       {
-        title: "فاکتورها",
+        title: "invoices",
         url: "/invoices",
         icon: FileText,
       },
       {
-        title: "پرداخت‌ها",
+        title: "payments",
         url: "/payments",
         icon: CreditCard,
       },
     ],
   },
   {
-    title: "حساب کاربری",
+    titleKey: "account",
     items: [
       {
-        title: "تنظیمات",
+        title: "settings",
         url: "/settings",
         icon: Settings,
       },
       {
-        title: "پشتیبانی",
+        title: "support",
         url: "/support",
         icon: LifeBuoy,
       },

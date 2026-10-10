@@ -4,7 +4,7 @@ import { Box, ChartPie, ShoppingBag, Users } from "lucide-react";
 type MobileNavigationType =
   | {
       type: "link";
-      title: string;
+      titleKey: "products" | "orders" | "reports" | "customers";
       href: string;
       icon: React.ComponentType<SVGProps<SVGSVGElement>>;
     }
@@ -15,13 +15,13 @@ type MobileNavigationType =
 export const mobileItems: MobileNavigationType[] = [
   {
     type: "link",
-    title: "محصولات",
+    titleKey: "products",
     href: "/products",
     icon: Box,
   },
   {
     type: "link",
-    title: "سفارش ها",
+    titleKey: "orders",
     href: "/orders",
     icon: ShoppingBag,
   },
@@ -30,14 +30,14 @@ export const mobileItems: MobileNavigationType[] = [
   },
   {
     type: "link",
-    title: "گزارش",
-    href: "/stastiscs",
+    titleKey: "reports",
+    href: "/reports",
     icon: ChartPie,
   },
   {
     type: "link",
-    title: "مشتریان",
-    href: "/users",
+    titleKey: "customers",
+    href: "/customers",
     icon: Users,
   },
 ];
