@@ -7,7 +7,7 @@ function AppThemeProvider({
   ...props
 }: { children: React.ReactNode } & ThemeProviderProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem {...props}>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem {...props}>
       {children}
     </ThemeProvider>
   );

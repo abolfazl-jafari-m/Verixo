@@ -36,11 +36,33 @@ export function NeedActions() {
   ];
 
   const columns: ColumnDef<ActionRequiredOrder>[] = [
-    { accessorKey: "id", header: t("table.order"), cell: ({ row }) => <span className="font-medium tabular-nums">{row.original.id}</span> },
-    { accessorKey: "customer", header: t("table.customer"), cell: ({ row }) => <span className="font-medium">{row.original.customer}</span> },
-    { accessorKey: "issue", header: t("table.issue"), cell: ({ row }) => <span className="text-muted-foreground">{row.original.issue}</span> },
-    { accessorKey: "amount", header: t("table.amount"), cell: ({ row }) => <span className="font-semibold tabular-nums">{row.original.amount}</span> },
-    { accessorKey: "updatedAt", header: t("table.updatedAt"), cell: ({ row }) => <span className="text-muted-foreground whitespace-nowrap">{row.original.updatedAt}</span> },
+    {
+      accessorKey: "id",
+      header: t("table.order"),
+      cell: ({ row }) => <span className="font-medium tabular-nums">{row.original.id}</span>,
+    },
+    {
+      accessorKey: "customer",
+      header: t("table.customer"),
+      cell: ({ row }) => <span className="font-medium">{row.original.customer}</span>,
+    },
+    {
+      accessorKey: "issue",
+      header: t("table.issue"),
+      cell: ({ row }) => <span className="text-muted-foreground">{row.original.issue}</span>,
+    },
+    {
+      accessorKey: "amount",
+      header: t("table.amount"),
+      cell: ({ row }) => <span className="font-semibold tabular-nums">{row.original.amount}</span>,
+    },
+    {
+      accessorKey: "updatedAt",
+      header: t("table.updatedAt"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground whitespace-nowrap">{row.original.updatedAt}</span>
+      ),
+    },
     {
       id: "action",
       header: () => <span className="block text-left">{t("table.action")}</span>,
@@ -71,7 +93,7 @@ export function NeedActions() {
           <ChevronLeft className={"size-3"} />
         </div>
       </div>
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:block">
+      <div className="border-border bg-card hidden overflow-hidden rounded-xl border shadow-sm lg:block">
         <Table className="min-w-[760px]">
           <TableHeader className="bg-muted/50">
             {table.getHeaderGroups().map((headerGroup) => (

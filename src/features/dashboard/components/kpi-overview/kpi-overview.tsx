@@ -12,13 +12,13 @@ export function KpiOverview() {
   const t = useTranslations("dashboard.kpi");
 
   return (
-    <section className="grid grid-cols-4 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+    <section className="border-border bg-card grid grid-cols-4 overflow-hidden rounded-xl border shadow-sm">
       {statistics.map((statistic, index) => {
         const Icon = statistic.positive ? ArrowUpRight : ArrowDownRight;
 
         return (
           <div
-            className={`min-w-0 px-5 py-5 ${index > 0 ? "border-s border-border" : ""}`}
+            className={`min-w-0 px-5 py-5 ${index > 0 ? "border-border border-s" : ""}`}
             key={statistic.key}
           >
             <p className="text-muted-foreground truncate text-xs">{t(`${statistic.key}.label`)}</p>

@@ -8,10 +8,14 @@ export function NeedActionCard() {
   const t = useTranslations("dashboard.actions");
 
   return (
-    <Card className="border-primary-200/70 bg-linear-to-bl from-card via-card to-primary-50/70 shadow-primary-950/5 dark:border-primary-400/20 dark:to-primary-950/20">
+    <Card className="border-primary-200/70 from-card via-card to-primary-50/70 shadow-primary-950/5 dark:border-primary-400/20 dark:to-primary-950/20 bg-linear-to-bl">
       <CardHeader className={"flex items-center justify-between"}>
         <CardTitle className={"text-primary-800 dark:text-primary-200 flex items-center gap-2"}>
-          <div className={"bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-200 rounded-full p-1.5"}>
+          <div
+            className={
+              "bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-200 rounded-full p-1.5"
+            }
+          >
             <ClipboardList className={"size-3"} />
           </div>
           <h4 className={"text-xs font-semibold"}>{t("sendInvoice")}</h4>

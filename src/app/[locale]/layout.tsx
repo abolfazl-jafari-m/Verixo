@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { routing } from "@/lib/i18n/routing";
+import { OrdersProvider } from "@/features/orders/components/orders-provider/orders-provider";
 import AppProvider from "@/providers/app-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -54,7 +55,9 @@ export default async function RootLayout({
       )}
     >
       <body dir={locale === "fa" ? "rtl" : "ltr"} className="flex min-h-full flex-col">
-        <AppProvider locale={locale}>{children}</AppProvider>
+        <AppProvider locale={locale}>
+          <OrdersProvider>{children}</OrdersProvider>
+        </AppProvider>
       </body>
     </html>
   );

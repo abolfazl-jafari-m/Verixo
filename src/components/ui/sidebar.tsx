@@ -149,8 +149,12 @@ function Sidebar({
   className,
   children,
   dir,
+  mobileTitle = "Sidebar",
+  mobileDescription = "Displays the mobile sidebar.",
   ...props
 }: React.ComponentProps<"div"> & {
+  mobileTitle?: string;
+  mobileDescription?: string;
   side?: "left" | "right";
   variant?: "sidebar" | "floating" | "inset";
   collapsible?: "offcanvas" | "icon" | "none";
@@ -189,8 +193,8 @@ function Sidebar({
           }
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+            <SheetTitle>{mobileTitle}</SheetTitle>
+            <SheetDescription>{mobileDescription}</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>

@@ -34,7 +34,7 @@ function ChartContainer({ config, className, children, ...props }: ChartContaine
     <div
       data-slot="chart"
       className={cn(
-        "h-64 min-h-64 min-w-0 w-full text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
+        "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground h-64 min-h-64 w-full min-w-0 text-xs",
         className,
       )}
       style={style}

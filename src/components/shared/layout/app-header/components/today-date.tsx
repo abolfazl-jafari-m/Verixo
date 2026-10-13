@@ -6,6 +6,8 @@ export function TodayDate() {
   const locale = useLocale();
   const today = new Date().getTime();
   const date = Intl.DateTimeFormat(locale, {
+    calendar: "persian",
+    timeZone: "Asia/Tehran",
     day: "numeric",
     month: "long",
     weekday: "long",

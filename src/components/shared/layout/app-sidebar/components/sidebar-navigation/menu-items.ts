@@ -1,4 +1,5 @@
 import {
+  LayoutDashboard,
   Package,
   ShoppingCart,
   Users,
@@ -14,26 +15,21 @@ export const menu: Menu[] = [
   {
     titleKey: "salesManagement",
     items: [
+      { title: "dashboard", url: "/dashboard", icon: LayoutDashboard, match: "exact" },
       {
         title: "products",
         url: "/products",
         icon: Package,
-        descriptionKey: "activeProducts",
-        statKey: "products",
       },
       {
         title: "orders",
         url: "/orders",
         icon: ShoppingCart,
-        descriptionKey: "orderCount",
-        statKey: "orders",
       },
       {
         title: "customers",
         url: "/customers",
         icon: Users,
-        descriptionKey: "customerCount",
-        statKey: "customers",
       },
     ],
   },
@@ -53,6 +49,7 @@ export const menu: Menu[] = [
       {
         title: "payments",
         url: "/payments",
+        disabled: true,
         icon: CreditCard,
       },
     ],
@@ -68,6 +65,7 @@ export const menu: Menu[] = [
       {
         title: "support",
         url: "/support",
+        disabled: true,
         icon: LifeBuoy,
       },
     ],

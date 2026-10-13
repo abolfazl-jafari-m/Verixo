@@ -14,7 +14,7 @@ export function SalesOverview() {
   const t = useTranslations("dashboard.salesOverview");
 
   return (
-    <Card className="h-full border-primary-200/70 bg-linear-to-bl from-card via-card to-primary-50/60 shadow-sm dark:border-primary-400/15 dark:to-primary-950/20">
+    <Card className="border-primary-200/70 from-card via-card to-primary-50/60 dark:border-primary-400/15 dark:to-primary-950/20 h-full bg-linear-to-bl shadow-sm">
       <CardHeader>
         <CardTitle className={"max-md:text-sm"}>{t("title")}</CardTitle>
         <CardAction>

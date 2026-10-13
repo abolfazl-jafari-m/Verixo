@@ -26,16 +26,20 @@ export function DailyFocus() {
       count: "۵",
       label: t("shipment"),
       description: t("shipmentDescription"),
-      className: "bg-secondary-100 text-secondary-800 dark:bg-secondary-500/20 dark:text-secondary-200",
+      className:
+        "bg-secondary-100 text-secondary-800 dark:bg-secondary-500/20 dark:text-secondary-200",
     },
   ];
 
   return (
-    <Card className="h-full border-primary-200/70 bg-linear-to-bl from-card via-card to-primary-50/50 shadow-sm dark:border-primary-400/15 dark:to-primary-950/20">
+    <Card className="border-primary-200/70 from-card via-card to-primary-50/50 dark:border-primary-400/15 dark:to-primary-950/20 h-full bg-linear-to-bl shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-3">
           <span>{t("title")}</span>
-          <Badge variant="outline" className="text-primary-700 border-primary-200 dark:text-primary-200 dark:border-primary-400/30">
+          <Badge
+            variant="outline"
+            className="text-primary-700 border-primary-200 dark:text-primary-200 dark:border-primary-400/30"
+          >
             {t("total", { count: 15 })}
           </Badge>
         </CardTitle>
@@ -48,10 +52,12 @@ export function DailyFocus() {
 
             return (
               <li
-                className="bg-background/50 flex items-center gap-3 rounded-xl border border-border/70 p-3"
+                className="bg-background/50 border-border/70 flex items-center gap-3 rounded-xl border p-3"
                 key={item.label}
               >
-                <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${item.className}`}>
+                <span
+                  className={`grid size-9 shrink-0 place-items-center rounded-lg ${item.className}`}
+                >
                   <Icon className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">

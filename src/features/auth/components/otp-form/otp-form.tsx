@@ -28,7 +28,7 @@ export function OtpForm() {
   return (
     <>
       <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <label className="text-sm font-semibold" htmlFor="otp">
             {t("otp.label")}
           </label>

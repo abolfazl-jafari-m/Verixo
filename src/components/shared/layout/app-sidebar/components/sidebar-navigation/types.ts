@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
 export type NavigationLabel =
+  | "dashboard"
   | "salesManagement"
   | "finance"
   | "account"
@@ -13,18 +14,12 @@ export type NavigationLabel =
   | "settings"
   | "support";
 
-export type SidebarStats = {
-  products: number;
-  orders: number;
-  customers: number;
-};
-
 type MenuItem = {
   title: NavigationLabel;
   url: string;
-  descriptionKey?: "activeProducts" | "orderCount" | "customerCount";
-  statKey?: keyof SidebarStats;
   icon: LucideIcon;
+  disabled?: boolean;
+  match?: "exact" | "section";
 };
 
 export type Menu = {

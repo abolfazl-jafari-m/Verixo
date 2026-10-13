@@ -12,6 +12,21 @@ import { Link, useRouter } from "@/lib/i18n/navigations";
 
 export type PhoneAuthFormProps = { mode: "login" | "signup" };
 
+const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+const ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+
+function normalizePhoneNumber(phone: string) {
+  return phone
+    .trim()
+    .replace(/[۰-۹]/g, (digit) => String(PERSIAN_DIGITS.indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String(ARABIC_DIGITS.indexOf(digit)))
+    .replace(/[\s()-]/g, "");
+}
+
+function isIranianMobileNumber(phone: string) {
+  return /^(?:\+98|0098|98|0)?9\d{9}$/.test(normalizePhoneNumber(phone));
+}
+
 export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
   const t = useTranslations("auth");
   const router = useRouter();
@@ -19,7 +34,7 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
     phone: z
       .string()
       .trim()
-      .regex(/^(?:\+98|0098|98|0)?9\d{9}$/, t("validation.phone")),
+      .refine(isIranianMobileNumber, t("validation.phone")),
   });
   type FormValues = z.infer<typeof schema>;
   const {
@@ -30,7 +45,7 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
   const otherMode = mode === "login" ? "signup" : "login";
 
   function onSubmit({ phone }: FormValues) {
-    router.push({ pathname: "/login/otp", query: { phone, mode } });
+    router.push({ pathname: "/login/otp", query: { phone: normalizePhoneNumber(phone), mode } });
   }
 
   return (
@@ -40,7 +55,7 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t(`${mode}.title`)}</h1>
         <p className="text-muted-foreground text-sm leading-6">{t(`${mode}.description`)}</p>
       </div>
-      <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={isSubmitting}>
         <div className="flex flex-col gap-2">
           <label htmlFor="phone" className="text-sm font-semibold">
             {t("phone.label")}
@@ -58,12 +73,12 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
               placeholder={t("phone.placeholder")}
               aria-invalid={Boolean(errors.phone)}
               aria-describedby={errors.phone ? "phone-error" : undefined}
-              className="h-12 ps-10 text-left"
+              className="h-12 ps-4 pe-10 text-left"
               {...register("phone")}
             />
           </div>
           {errors.phone && (
-            <p id="phone-error" className="text-destructive text-sm" role="alert">
+            <p id="phone-error" className="text-destructive text-sm" role="alert" aria-live="polite">
               {errors.phone.message}
             </p>
           )}

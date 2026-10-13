@@ -1,65 +1,63 @@
-import { ChevronLeft, Plus } from "lucide-react";
+"use client";
+import { useState } from "react";
+import { ChevronRight, Plus } from "lucide-react";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerTrigger,
+  DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { CtaOptions } from "@/components/shared/layout/mobile-navigation/components/cta-action/cta-option";
-import { Link } from "@/lib/i18n/navigations";
-import { cn } from "@/lib/utils";
-
+import { CtaOptions } from "./cta-option";
+import { Link, usePathname } from "@/lib/i18n/navigations";
+import { useTranslations } from "next-intl";
 export function CtaAction() {
+  const t = useTranslations("appStates");
+  const nav = useTranslations("layout.mobileNavigation");
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [previousPath, setPreviousPath] = useState(pathname);
+  if (previousPath !== pathname) {
+    setPreviousPath(pathname);
+    setOpen(false);
+  }
   return (
-    <Drawer showSwipeHandle>
+    <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
       <DrawerTrigger
         render={
-          <Button className="from-primary-700 to-primary-950 absolute top-0 left-1/2 z-50 flex size-13 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-linear-to-br shadow-[0_4px_30px_var(--primary)/0.85]">
-            <Plus size={24} color={"white"} />
+          <Button
+            aria-label={nav("quickActions")}
+            className="bg-primary text-primary-foreground absolute top-1/2 left-1/2 z-10 size-11 -translate-x-1/2 -translate-y-1/2 rounded-xl"
+          >
+            <Plus aria-hidden="true" />
           </Button>
         }
       />
       <DrawerContent>
-        <div className={"flex flex-col gap-4 p-4"}>
-          {CtaOptions.map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                href={item.url}
-                key={i}
-                className={cn(
-                  "flex items-center justify-between rounded-md border bg-linear-120 p-4 shadow-md",
-                  item.className,
-                )}
-              >
-                <div className={"flex items-center gap-2"}>
-                  <div
-                    className={
-                      "bg-foreground/20 flex size-10 items-center justify-center rounded-lg"
-                    }
-                  >
-                    <Icon className={"size-5 text-white"} />
-                  </div>
-                  <div className={"flex flex-col"}>
-                    <h6 className={"text-sm font-semibold text-white"}>{item.title}</h6>
-                    <p className={"text-xs font-light text-neutral-200"}>{item.description}</p>
-                  </div>
-                </div>
-                <ChevronLeft className={"size-4 text-white"} />
-              </Link>
-            );
-          })}
+        <DrawerTitle className="sr-only">{nav("quickActions")}</DrawerTitle>
+        <div className="space-y-3 p-4">
+          {CtaOptions.map((item) => (
+            <Link
+              key={item.url}
+              href={item.url}
+              onNavigate={() => {
+                if (pathname === item.url) setOpen(false);
+              }}
+              className="bg-muted/40 hover:bg-muted focus-visible:ring-ring flex items-center gap-3 rounded-xl p-4 outline-none focus-visible:ring-2"
+            >
+              <item.icon className="text-primary size-5" aria-hidden="true" />
+              <span className="flex-1">
+                <span className="block text-sm font-semibold">{t(item.title)}</span>
+                <span className="text-muted-foreground text-xs">{t(item.description)}</span>
+              </span>
+              <ChevronRight aria-hidden="true" className="size-4 rtl:rotate-180" />
+            </Link>
+          ))}
         </div>
         <DrawerFooter>
-          <DrawerClose
-            render={
-              <Button variant={"outline"} className={"rounded-md"}>
-                انصراف
-              </Button>
-            }
-          />
+          <DrawerClose render={<Button variant="outline">{t("cancel")}</Button>} />
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

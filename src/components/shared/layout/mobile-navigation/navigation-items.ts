@@ -1,10 +1,10 @@
 import { SVGProps } from "react";
-import { Box, ChartPie, ShoppingBag, Users } from "lucide-react";
+import { Box, LayoutDashboard, ShoppingBag, Users } from "lucide-react";
 
 type MobileNavigationType =
   | {
       type: "link";
-      titleKey: "products" | "orders" | "reports" | "customers";
+      titleKey: "products" | "orders" | "dashboard" | "customers";
       href: string;
       icon: React.ComponentType<SVGProps<SVGSVGElement>>;
     }
@@ -30,9 +30,9 @@ export const mobileItems: MobileNavigationType[] = [
   },
   {
     type: "link",
-    titleKey: "reports",
-    href: "/reports",
-    icon: ChartPie,
+    titleKey: "dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
   },
   {
     type: "link",

@@ -1,0 +1,15 @@
+# Shipping labels
+
+Sender preferences now live in the central Settings shipping tab; `/[locale]/settings/shipping-labels` redirects to `/settings?tab=shipping`. `settings-store.ts` is a read-only adapter over `features/settings`: shared bilingual shop name/logo/contact plus an optional dispatch-contact override. Existing `verixo:shipping-label-settings:v1` values are imported as defaults until their central section is saved. See `../settings/AUDIT.md` for ownership and Laravel integration. No carrier, invoice, payment, or fulfillment writes occur during label generation.
+
+Labels are generated on demand from current OrdersProvider records and current saved sender settings. Recipient validation reuses the customer form's name, phone, city, and address rules. Province and postal code are optional. Delivery notes and financial details are deliberately not copied. Sender phone allows landlines as well as mobile numbers. Logos accept PNG/JPEG up to 1 MB and 4096 pixels per side; no external logo URLs or SVG execution.
+
+Selection is scoped to the displayed filtered board, resets when search/payment/date filters change, and outputs status-column order followed by source order within each column. Duplicate selection IDs cannot create duplicate pages. Preview identifies excluded orders and generates only valid recipients.
+
+`pdf.ts` generates selectable vector text with jsPDF, Arabic shaping, bidirectional text handling, and embedded Vazirmatn Regular (v33.003, SIL OFL, license in `public/fonts`). Font source: https://github.com/rastikerdar/vazirmatn/tree/v33.003. A6 is 105 × 148 mm; thermal is 101.6 × 152.4 mm. Each label is exactly one page. Text wraps and shrinks from 10 to a minimum of 8 pt; content that still cannot fit fails visibly instead of clipping. The PDF is created locally, without uploading recipient data.
+
+Download, exact PDF preview, and Print share the same PDF blob and physical page boxes; the accessible HTML preview is a readable companion, not the source of the PDF. The browser PDF viewer controls actual printing, so navigation/dialog controls are excluded. Print at actual size with matching printer paper. Mobile/browser PDF print support varies: the persistent download action allows printing from a PDF reader. No screenshot-based PDF or browser print-to-PDF download is used. PDF text extraction may return Arabic presentation-form Unicode glyphs rather than normalized characters.
+
+Blob URLs are revoked when input changes or preview unmounts; stale documents cannot be downloaded after format/locale/recipient/settings changes. Settings forms warn for unsaved link navigation and page unload and provide discard controls. Best-effort session storage recovers unsaved drafts after browser-history or locale navigation without intercepting the global router. Drafts are never used for labels; only explicitly saved settings are authoritative.
+
+Verification: `node node_modules/vitest/vitest.mjs run --project reports` includes shipping validation, selection, persistence, actual PDF page dimensions/counts, embedded fonts, and order non-mutation. Physical printer output still requires device-specific testing.

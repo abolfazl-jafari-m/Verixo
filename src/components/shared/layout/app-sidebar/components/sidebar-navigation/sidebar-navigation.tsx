@@ -1,3 +1,4 @@
+"use client";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -5,51 +6,52 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { Link } from "@/lib/i18n/navigations";
-import { ChevronLeft } from "lucide-react";
-import { SidebarStats } from "./types";
+import { Link, usePathname } from "@/lib/i18n/navigations";
+import { isNavigationActive } from "@/lib/navigation";
+import { ChevronRight } from "lucide-react";
 import { menu } from "./menu-items";
 import { useTranslations } from "next-intl";
-
 export function SidebarNavigation() {
   const t = useTranslations("layout.navigation");
-  const stats: SidebarStats = {
-    orders: 100,
-    products: 25,
-    customers: 1000,
-  };
+  const states = useTranslations("appStates");
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
   return (
-    <>
-      {menu.map((item, index) => (
-        <SidebarGroup key={index}>
-          <SidebarGroupLabel>{t(item.titleKey)}</SidebarGroupLabel>
+    <nav aria-label={states("navigation")}>
+      {menu.map((group) => (
+        <SidebarGroup key={group.titleKey}>
+          <SidebarGroupLabel>{t(group.titleKey)}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className={"space-y-2"}>
-              {item.items?.map((nav, i) => {
-                const Icon = nav.icon;
+            <SidebarMenu className="space-y-1">
+              {group.items?.map((item) => {
+                const active = !item.disabled && isNavigationActive(pathname, item.url, item.match);
                 return (
-                  <SidebarMenuItem key={i}>
-                    <SidebarMenuButton size={"sm"} className={"h-fit rounded-md px-2 py-1"}>
-                      <Link
-                        href={nav.url}
-                        className={"flex w-full items-center justify-between gap-2"}
-                      >
-                        <div className={"flex items-center gap-2"}>
-                          <div className={"bg-foreground/20 rounded-lg p-2"}>
-                            <Icon />
-                          </div>
-                          <div className={"flex flex-col"}>
-                            <p className={"text-sm font-semibold"}>{t(nav.title)}</p>
-                            {nav.descriptionKey && nav.statKey && (
-                              <span className={"text-xs font-light"}>
-                                {t(nav.descriptionKey, { count: stats[nav.statKey] })}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <ChevronLeft />
-                      </Link>
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      render={
+                        item.disabled ? undefined : (
+                          <Link
+                            href={item.url}
+                            onNavigate={() => {
+                              if (pathname === item.url) setOpenMobile(false);
+                            }}
+                            aria-current={active ? "page" : undefined}
+                          />
+                        )
+                      }
+                      disabled={item.disabled}
+                      isActive={active}
+                      className="h-12 rounded-xl px-3 motion-reduce:transition-none"
+                    >
+                      <item.icon aria-hidden="true" />
+                      <span className="flex-1 text-start text-sm">{t(item.title)}</span>
+                      {item.disabled ? (
+                        <span className="text-[10px]">{states("soon")}</span>
+                      ) : (
+                        <ChevronRight aria-hidden="true" className="rtl:rotate-180" />
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -58,6 +60,6 @@ export function SidebarNavigation() {
           </SidebarGroupContent>
         </SidebarGroup>
       ))}
-    </>
+    </nav>
   );
 }

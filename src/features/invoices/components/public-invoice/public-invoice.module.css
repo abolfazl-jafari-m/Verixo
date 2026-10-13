@@ -1,0 +1,20 @@
+@media print {
+  :global(html):has(.page),
+  :global(body):has(.page) {
+    background: white !important;
+    color-scheme: light;
+  }
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  .controls {
+    display: none !important;
+  }
+  .page {
+    background: white;
+    color: black;
+    padding: 0;
+    min-height: 0;
+  }
+}

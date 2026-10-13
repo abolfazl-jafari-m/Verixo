@@ -48,7 +48,7 @@ export function OrderStatusChart() {
   ];
 
   return (
-    <Card className="h-full border-secondary-200/70 bg-linear-to-bl from-card via-card to-secondary-50/50 shadow-sm dark:border-secondary-400/15 dark:to-secondary-950/20">
+    <Card className="border-secondary-200/70 from-card via-card to-secondary-50/50 dark:border-secondary-400/15 dark:to-secondary-950/20 h-full bg-linear-to-bl shadow-sm">
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>
@@ -84,7 +84,9 @@ export function OrderStatusChart() {
                 <span className="size-2 rounded-full" style={{ backgroundColor: item.fill }} />
                 {item.status}
               </span>
-              <span className="font-semibold tabular-nums">{item.orders.toLocaleString("fa-IR")}</span>
+              <span className="font-semibold tabular-nums">
+                {item.orders.toLocaleString("fa-IR")}
+              </span>
             </div>
           ))}
         </div>

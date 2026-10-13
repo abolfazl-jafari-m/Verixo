@@ -1,0 +1,41 @@
+@media print {
+  .document {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: white;
+    color: black;
+    font-size: 10pt;
+  }
+  .document * {
+    color: black !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .document table {
+    display: table;
+  }
+  .document thead {
+    display: table-header-group;
+  }
+  .document tbody {
+    display: table-row-group;
+  }
+  .document tr {
+    display: table-row;
+    break-inside: avoid;
+  }
+  .document td,
+  .document th {
+    display: table-cell;
+    padding: 8pt;
+  }
+  .document td > span {
+    display: none;
+  }
+  .document header,
+  .document footer,
+  .document dl {
+    break-inside: avoid;
+  }
+}
