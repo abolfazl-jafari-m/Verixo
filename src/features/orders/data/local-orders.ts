@@ -12,6 +12,7 @@ const storedOrderSchema = z.object({
   number: z.string(),
   notes: z.string(),
   createdAt: z.iso.datetime(),
+  archivedAt: z.iso.datetime().nullable().default(null),
   status: z.enum(orderStatuses),
   payment: z.enum(["pending", "paid"]),
   invoice: invoiceRecordSchema.optional(),

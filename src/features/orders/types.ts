@@ -43,6 +43,7 @@ export interface OrderLine {
 }
 
 export interface Order {
+  archivedAt: string | null;
   id: string;
   number: string;
   customer: CustomerInformation | null;

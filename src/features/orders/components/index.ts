@@ -1,4 +1,5 @@
 export * from "./orders-provider/orders-provider";
+export * from "./archived-orders/archived-orders";
 export * from "./orders-workspace/orders-workspace";
 export * from "./order-form/order-form";
 export * from "./orders-board/orders-board";

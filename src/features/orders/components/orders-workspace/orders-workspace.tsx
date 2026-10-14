@@ -17,14 +17,25 @@ import { OrderDateFilter } from "./order-date-filter";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BulkLabelActions, ShippingLabelPreview } from "@/features/shipping-labels/components";
 import { selectDisplayed, selectedOrders, toggleSelection } from "@/features/shipping-labels/model";
+import { activeOrders, canArchiveOrder } from "../../archive";
+import { ArchiveAction } from "../archive-action/archive-action";
 
 export function OrdersWorkspace() {
   const t = useTranslations("orders");
   const shipping = useTranslations("shippingLabels");
+  const archive = useTranslations("orderArchive");
   const [labelSelection, setLabelSelection] = useState<string[]>([]);
   const [previewIds, setPreviewIds] = useState<string[] | null>(null);
   const f = useFormatter();
-  const { orders, ready, moveOrder, createdNumber, dismissSuccess, storageAvailable } = useOrders();
+  const {
+    orders: allOrders,
+    ready,
+    moveOrder,
+    createdNumber,
+    dismissSuccess,
+    storageAvailable,
+  } = useOrders();
+  const orders = activeOrders(allOrders);
   const [search, setSearch] = useState("");
   const [payment, setPayment] = useState("all");
   const [date, setDate] = useState("");
@@ -61,6 +72,9 @@ export function OrdersWorkspace() {
     <div className="min-w-0 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">{t("demo")}</p>
+        <Button variant="outline" nativeButton={false} render={<Link href="/orders/archive" />}>
+          {archive("title")}
+        </Button>
         <Button nativeButton={false} render={<Link href="/orders/create" />} className="h-10 gap-2">
           <Plus className="size-4" />
           {t("create")}
@@ -157,6 +171,31 @@ export function OrdersWorkspace() {
       </div>
       {ready && filtered.length === 0 && (
         <AppState title={orders.length ? t("noResults") : t("noOrders")} />
+      )}
+      {ready && (
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            disabled={!filtered.some(canArchiveOrder)}
+            onClick={() =>
+              setLabelSelection(filtered.filter(canArchiveOrder).map((order) => order.id))
+            }
+          >
+            {archive("selectEligible")}
+          </Button>
+          <ArchiveAction
+            ids={selectedOrders(filtered, labelSelection).map((order) => order.id)}
+            onSuccess={(changed) =>
+              setLabelSelection((ids) => ids.filter((id) => !changed.includes(id)))
+            }
+          />
+          <p className="text-muted-foreground text-xs">
+            {archive("selection", {
+              selected: selectedOrders(filtered, labelSelection).length,
+              eligible: selectedOrders(filtered, labelSelection).filter(canArchiveOrder).length,
+            })}
+          </p>
+        </div>
       )}
       {ready && (
         <BulkLabelActions

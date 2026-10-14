@@ -17,8 +17,10 @@ import {
 import { normalizePhone } from "../../utils";
 import { readSettingsSection, SettingsUnavailableError } from "@/features/settings/storage";
 import { invoiceSettingsSnapshot } from "@/features/settings/model";
+import { changeOrderArchive, type ArchiveResult } from "../../archive";
 
 interface OrdersContextValue {
+  archiveOrders: (ids: string[], restore?: boolean) => ArchiveResult;
   orders: Order[];
   ready: boolean;
   storageAvailable: boolean;
@@ -79,6 +81,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       {
         ...values,
         ...identity,
+        archivedAt: null,
         invoice: createMockInvoice(
           identity,
           invoiceSettingsSnapshot(shop.value, invoicePreferences.value),
@@ -93,6 +96,18 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       current,
     );
     setCreatedNumber(number);
+  }
+  function archiveOrders(ids: string[], restore = false) {
+    const loaded = readLocalOrders(currentOrders.current);
+    if (!ready || !loaded.available) {
+      setStorageAvailable(false);
+      return { changed: [], skipped: [], failed: [...new Set(ids)] };
+    }
+    const next = changeOrderArchive(loaded.orders, ids, restore, writeLocalOrder);
+    currentOrders.current = next.orders;
+    setOrders(next.orders);
+    setStorageAvailable(next.result.failed.length === 0);
+    return next.result;
   }
   // Local delivery simulation only; payment and fulfillment are never changed here.
   function sendInvoice(id: string) {
@@ -165,6 +180,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     <OrdersContext.Provider
       value={{
         orders,
+        archiveOrders,
         ready,
         storageAvailable,
         createdNumber,

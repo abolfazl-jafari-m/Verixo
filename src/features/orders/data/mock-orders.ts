@@ -20,6 +20,7 @@ const customers = [
 export const mockOrders: Order[] = customers.map((name, index) => {
   const status = orderStatuses[index % orderStatuses.length];
   return {
+    archivedAt: null,
     id: `demo-order-${index}`,
     number: `ORD-${1042 + index}`,
     customerInformationStatus:

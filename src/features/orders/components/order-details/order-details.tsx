@@ -26,6 +26,8 @@ import { type Order } from "../../types";
 import { orderTotals } from "../../utils";
 import { CustomerFormLink } from "../customer-form-link/customer-form-link";
 import { OrderProgress } from "../order-progress/order-progress";
+import { ArchiveAction } from "../archive-action/archive-action";
+import { canArchiveOrder } from "../../archive";
 
 export function OrderDetails({
   order,
@@ -232,6 +234,9 @@ export function OrderDetails({
                 <Button variant="outline" onClick={() => onPrintLabel(order.id)}>
                   {shipping("individualPrint")}
                 </Button>
+              )}
+              {(order.archivedAt || canArchiveOrder(order)) && (
+                <ArchiveAction ids={[order.id]} restore={!!order.archivedAt} onSuccess={onClose} />
               )}
               <p className="text-muted-foreground max-w-lg text-[11px] leading-5">{t("demo")}</p>
               <Button variant="secondary" className="h-10 px-6" onClick={onClose}>

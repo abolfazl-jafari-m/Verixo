@@ -16,6 +16,8 @@ Follow these priorities in order:
 4. Keep components focused, composable, and easy to test.
 5. Avoid unnecessary abstractions, dependencies, and refactoring.
 
+Verixo is also the owner's learning project. Keep changes reviewable and explain the affected data flow and important design decisions. Test writing is reserved for the owner unless explicitly delegated; follow section 13.
+
 ## 2. Inspect Before Implementing
 
 Before changing code:
@@ -45,7 +47,7 @@ Responsible for Next.js App Router concerns:
 - Route-level composition and metadata.
 - Locale-aware routing and navigation.
 
-Keep route files thin. They should compose the relevant feature-level page or view rather than contain extensive business logic or large UI implementations.
+Keep route files thin. Compose feature components directly in route-level pages, following the dashboard. Avoid redundant feature-level page wrappers and keep extensive business logic out of routes.
 
 Do not create a separate App Shell abstraction when the existing root or dashboard layouts already fulfill that responsibility.
 
@@ -203,7 +205,8 @@ Do not introduce hydration errors or access browser-only APIs during server rend
 Separate presentation from business behavior when that separation improves clarity and testability.
 
 - Use local component state for genuinely local UI interactions.
-- Follow existing Zustand conventions for shared client state.
+- Follow the owning feature's state approach: orders use React Context and local storage; settings use section-specific storage adapters and hooks; products use a demo service and TanStack Query.
+- Zustand and Axios are installed but do not currently establish application conventions. Do not introduce stores, API clients, or migrations merely to use installed packages.
 - Follow existing TanStack Query / React Query conventions for server state, caching, mutations, and invalidation.
 - Use the project's existing form and validation libraries when present.
 - Keep API access out of low-level presentation primitives.
@@ -270,19 +273,27 @@ Do not optimize speculatively at the cost of readability.
 
 ## 13. Testing and Verification
 
+The owner is practicing test writing. Agent-written feature tests were intentionally removed, while Vitest, Testing Library, Playwright tooling, and starter Storybook examples were retained.
+
+- Do not add, restore, rewrite, or delete tests unless the user explicitly asks for that work. This applies to all features, not just UI-only changes.
+- Do not recreate removed tests as part of feature implementation, bug fixes, or coverage improvements.
+- Preserve test infrastructure and user-written tests. Suggest scenarios or explain concepts without completing the owner's exercises unless requested.
+- Do not treat installed tools, starter stories, or an empty test selection as proof of feature coverage.
+
 After implementation:
 
-- Run the relevant existing lint, type-check, and test commands when available.
+- Run relevant lint and type-check commands; build when changes warrant it. For documentation-only changes, check formatting, links, and the diff rather than unnecessarily rebuilding the app.
+- Run relevant existing tests when present and appropriate; running tests does not authorize editing them.
 - Inspect the final diff for unrelated changes.
 - Check responsive behavior and interaction states when possible.
-- Add or update tests for meaningful logic and behavior.
-- Use existing Vitest and Testing Library conventions if configured.
 - Do not claim that a command or test passed unless it was actually executed successfully.
 - Report any command that could not be run and any remaining uncertainty.
 
-Prioritize tests for business logic, state transitions, data transformations, and important interactive behavior.
+When explicitly asked to write tests, use the existing Vitest/Testing Library setup and prioritize business logic, state transitions, data transformations, and important interactive behavior.
 
 Do not add superficial tests solely to increase test count.
+
+Available checks include `npm run lint`, `npx tsc --noEmit --incremental false`, `npm run build`, and targeted Prettier checks. There is no `npm test` script. The Vitest project named `reports` spans several feature directories; inspect `vitest.config.ts` before choosing a command. It has no matching feature tests until the owner adds them.
 
 ## 14. Scope Control
 
@@ -333,4 +344,35 @@ Final principle:
 - Place feature components in `components/<component-name>/<component-name>.tsx` and expose them through `components/index.ts`, matching the dashboard's barrel exports. Keep private helpers beside their owning component.
 - Reuse available shadcn/ui controls, including Select, Checkbox, Switch, and Dialog, instead of native replacements.
 - Prefer subtle borders, soft surfaces, and comfortable spacing over heavily outlined UI.
-- For current UI work, do not add tests unless the user explicitly requests them. This overrides the earlier test-writing guidance; type-checking, linting, and visual inspection remain appropriate.
+- Follow section 13 for owner-led testing; type-checking, linting, and visual inspection remain appropriate.
+
+## Current product and data boundaries
+
+Use this map as orientation and verify relevant code before each task:
+
+- Features include auth, dashboard, products, orders, invoices, customers, reports, shipping labels, and settings. Do not assume only the dashboard exists.
+- Products live in the in-memory `productService` and reset on refresh. Reuse its query key across catalog editing and order creation.
+- `OrdersProvider` merges mock seeds with validated per-order browser records. Settings have versioned, section-scoped storage and separate unsaved drafts.
+- Customers derive from demo contacts and orders. Reports use orders and an explicitly incomplete demo ledger. Much of the dashboard uses independent fixtures.
+- Login/OTP navigation is not authentication. The locale proxy is not an authorization boundary. Public invoice/customer-form links are browser-local demos, not cross-device services.
+- Laravel integration and PWA support are future work. Do not invent endpoints or imply real authentication, payment, message delivery, installation, or offline sync already exists.
+- Persian is the default unprefixed locale; English uses `/en`. Use existing locale-aware navigation helpers. English dashboard translations are incomplete; add both language entries for new or changed UI text and verify touched namespaces.
+- Storybook contains starter examples. Inspect its preview, styles, and provider requirements before creating application stories.
+
+### Preserve domain invariants
+
+- Capture selling price and purchase-cost snapshots at order submission. Catalog edits, payment transitions, and invoice edits must not refresh historical costs.
+- Snapshot shop identity and invoice presentation when issuing a new invoice; settings updates must not rewrite existing snapshots.
+- Preserve the distinction between unknown values and zero. Do not display complete costs or profit when required financial coverage is missing.
+- Archiving is separate from cancellation, deletion, and financial eligibility. Preserve historical records and existing archive/restore rules.
+- Label generation must not change order, invoice, payment, or fulfillment state. Keep preview, download, and print consistent with selected recipients and format.
+- Keep storage failures visible and preserve unsaved edits where supported. Browser persistence is not durable server storage or a concurrency guarantee.
+
+Read relevant feature documentation before changing these areas: `src/features/reports/README.md`, `src/features/settings/AUDIT.md`, and `src/features/shipping-labels/README.md`. Historical verification notes may refer to deleted tests; inspect current files rather than assuming those tests remain.
+
+### Documentation and reporting
+
+- Keep `README.md` aligned with implemented behavior, actual scripts, persistence limits, and demo versus real integrations when those change.
+- Describe proposed Storybook, testing, PWA, API, and CI work as planned until implemented and verified.
+- Do not present estimated completion percentages as measured facts or fixed project requirements.
+- Report existing check failures separately from the current change. Do not broaden tasks into unrelated lint fixes or refactoring without a concrete need.
