@@ -5,14 +5,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { AppState, ContentSkeleton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "@/lib/i18n/navigations";
 import { useOrders } from "../orders-provider/orders-provider";
 import { OrderSelect } from "../order-select/order-select";
@@ -21,6 +15,7 @@ import { OrderDetails } from "../order-details/order-details";
 import { ArchiveAction } from "../archive-action/archive-action";
 import { archivedOrders } from "../../archive";
 import { orderDateKey, orderTotals } from "../../utils";
+import type { Order } from "../../types";
 import { statusPresentation } from "../../status-presentation";
 
 export function ArchivedOrders() {
@@ -32,7 +27,6 @@ export function ArchivedOrders() {
   const [payment, setPayment] = useState("all");
   const [date, setDate] = useState("");
   const [sort, setSort] = useState("newest");
-  const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const archived = archivedOrders(orders);
   const query = search.trim().toLocaleLowerCase();
@@ -48,8 +42,6 @@ export function ArchivedOrders() {
         (sort === "oldest" ? 1 : -1) *
         (a.archivedAt!.localeCompare(b.archivedAt!) || a.id.localeCompare(b.id)),
     );
-  const pages = Math.max(1, Math.ceil(filtered.length / 10));
-  const current = Math.min(page, pages - 1);
   const formatDate = (value: string) =>
     f.dateTime(new Date(value), {
       calendar: "persian",
@@ -58,6 +50,105 @@ export function ArchivedOrders() {
       day: "numeric",
       timeZone: "Asia/Tehran",
     });
+  const columns: ColumnDef<Order>[] = [
+    {
+      id: "number",
+      header: t("number"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return (
+          <div>
+            <bdi>{order.number}</bdi>
+          </div>
+        );
+      },
+    },
+    {
+      id: "customer",
+      header: t("customer"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return (
+          <div className="max-w-60 break-words whitespace-normal">
+            {order.customer?.name ?? o("customerFlow.awaiting")}
+          </div>
+        );
+      },
+    },
+    {
+      id: "createdAt",
+      header: t("createdAt"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return <div>{formatDate(order.createdAt)}</div>;
+      },
+    },
+    {
+      id: "total",
+      header: t("total"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return (
+          <div>
+            {f.number(orderTotals(order.lines, order.shipping).total)} {o("currency")}
+          </div>
+        );
+      },
+    },
+    {
+      id: "payment",
+      header: t("payment"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return <div>{o(`payments.${order.payment}`)}</div>;
+      },
+    },
+    {
+      id: "status",
+      header: t("status"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return (
+          <div>
+            <span
+              className={`rounded-md px-2 py-1 text-xs ${statusPresentation[order.status].badge}`}
+            >
+              {o(`statuses.${order.status}`)}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "archivedAt",
+      header: t("archivedAt"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return <div>{formatDate(order.archivedAt!)}</div>;
+      },
+    },
+    {
+      id: "actions",
+      header: t("actions"),
+      cell: ({ row }) => {
+        const order = row.original;
+        return (
+          <div>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => setSelected(order.id)}
+                aria-label={t("open", { number: order.number })}
+              >
+                {o("details")}
+              </Button>
+              <ArchiveAction ids={[order.id]} restore />
+            </div>
+          </div>
+        );
+      },
+    },
+  ];
   return (
     <div className="min-w-0 space-y-5">
       <Button variant="outline" nativeButton={false} render={<Link href="/orders" />}>
@@ -74,7 +165,6 @@ export function ArchivedOrders() {
             placeholder={o("searchPlaceholder")}
             onChange={(event) => {
               setSearch(event.target.value);
-              setPage(0);
             }}
           />
         </div>
@@ -84,7 +174,6 @@ export function ArchivedOrders() {
           value={payment}
           onChange={(value) => {
             setPayment(value);
-            setPage(0);
           }}
           options={[
             { value: "all", label: o("allPayments") },
@@ -96,7 +185,6 @@ export function ArchivedOrders() {
           value={date}
           onChange={(value) => {
             setDate(value);
-            setPage(0);
           }}
         />
         <OrderSelect
@@ -105,7 +193,6 @@ export function ArchivedOrders() {
           value={sort}
           onChange={(value) => {
             setSort(value);
-            setPage(0);
           }}
           options={[
             { value: "newest", label: t("newest") },
@@ -120,7 +207,6 @@ export function ArchivedOrders() {
             setSearch("");
             setDate("");
             setPayment("all");
-            setPage(0);
           }}
         >
           {o("clear")}
@@ -145,83 +231,12 @@ export function ArchivedOrders() {
           description={archived.length ? undefined : t("emptyDescription")}
         />
       ) : (
-        <>
-          <div className="border-border/50 bg-card min-w-0 overflow-hidden rounded-2xl border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {[
-                    "number",
-                    "customer",
-                    "createdAt",
-                    "total",
-                    "payment",
-                    "status",
-                    "archivedAt",
-                    "actions",
-                  ].map((key) => (
-                    <TableHead key={key}>{t(key)}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.slice(current * 10, current * 10 + 10).map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell>
-                      <bdi>{order.number}</bdi>
-                    </TableCell>
-                    <TableCell className="max-w-60 break-words whitespace-normal">
-                      {order.customer?.name ?? o("customerFlow.awaiting")}
-                    </TableCell>
-                    <TableCell>{formatDate(order.createdAt)}</TableCell>
-                    <TableCell>
-                      {f.number(orderTotals(order.lines, order.shipping).total)} {o("currency")}
-                    </TableCell>
-                    <TableCell>{o(`payments.${order.payment}`)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`rounded-md px-2 py-1 text-xs ${statusPresentation[order.status].badge}`}
-                      >
-                        {o(`statuses.${order.status}`)}
-                      </span>
-                    </TableCell>
-                    <TableCell>{formatDate(order.archivedAt!)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setSelected(order.id)}
-                          aria-label={t("open", { number: order.number })}
-                        >
-                          {o("details")}
-                        </Button>
-                        <ArchiveAction ids={[order.id]} restore />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <nav
-            aria-label={t("pagination")}
-            className="flex flex-wrap items-center justify-between gap-3"
-          >
-            <Button variant="outline" disabled={current === 0} onClick={() => setPage(current - 1)}>
-              {t("previous")}
-            </Button>
-            <p className="text-sm">
-              {t("page", { page: current + 1, pages, count: filtered.length })}
-            </p>
-            <Button
-              variant="outline"
-              disabled={current + 1 >= pages}
-              onClick={() => setPage(current + 1)}
-            >
-              {t("next")}
-            </Button>
-          </nav>
-        </>
+        <DataTable
+          data={filtered}
+          columns={columns}
+          caption={t("title")}
+          getRowId={(order) => order.id}
+        />
       )}
       <OrderDetails
         order={orders.find((order) => order.id === selected)}

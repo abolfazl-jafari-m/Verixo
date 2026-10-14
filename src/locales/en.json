@@ -51,7 +51,34 @@
       "resend": "Resend code"
     }
   },
-  "dashboard": {},
+  "dashboard": {
+    "actions": {
+      "title": "Needs action",
+      "all": "All orders",
+      "itemCount": "{count} items",
+      "sendInvoice": "Send invoice",
+      "invoiceNotSent": "The invoice has not been sent yet.",
+      "currency": "Toman",
+      "customerInformation": "Get customer information",
+      "customerInformationPending": "Payment confirmed; delivery information is still needed.",
+      "packProducts": "Pack products",
+      "packingPending": "Customer information is ready; pack the products.",
+      "postPackage": "Post package",
+      "shippingPending": "The package is packed and ready to dispatch.",
+      "customerPending": "Customer information pending",
+      "loading": "Loading orders…",
+      "empty": "No orders need action.",
+      "actionFailed": "Unable to save or read order changes. Check the orders page and try again.",
+      "table": {
+        "order": "Order",
+        "customer": "Customer",
+        "issue": "Action required",
+        "amount": "Amount",
+        "updatedAt": "Created",
+        "action": "Action"
+      }
+    }
+  },
   "layout": {
     "greeting": "Hello 👋",
     "userName": "Sina Rezaei",
@@ -135,7 +162,7 @@
     "formHint": "Add product details, then save to update the demo catalog.",
     "typeHint": "Switching type keeps your input while this form is open. Saving includes only the selected type. Simple products save all attributes as descriptive.",
     "images": "Images",
-    "imagesHint": "Add public HTTP or HTTPS image URLs. File uploads are not connected yet.",
+    "imagesHint": "Choose local images or add image URLs.",
     "imageNumber": "Image URL {number, number}",
     "addImage": "Add image URL",
     "removeImage": "Remove image {number, number}",
@@ -191,7 +218,11 @@
     "attributeHasErrors": "Please correct the fields below.",
     "keepOneValue": "Each attribute needs at least one value.",
     "costPriceLabel": "Unit acquisition cost (Toman)",
-    "costPriceHint": "Purchase price + allocated inbound acquisition costs. Excludes advertising, overhead, customer delivery and order packaging. Leave blank if unknown; enter 0 only for free inventory."
+    "costPriceHint": "Purchase price + allocated inbound acquisition costs. Excludes advertising, overhead, customer delivery and order packaging. Leave blank if unknown; enter 0 only for free inventory.",
+    "uploadImages": "Upload product images",
+    "uploadHint": "Choose PNG, JPEG or WebP images up to 2 MB and 4096 × 4096 pixels each. Images stay in the demo catalog until refresh.",
+    "readingImages": "Reading images…",
+    "uploadError": "Images could not be added. Choose valid PNG, JPEG or WebP files within the limits and try again."
   },
   "orders": {
     "title": "Orders",
@@ -822,5 +853,16 @@
     "next": "Next",
     "page": "Page {page} of {pages} · {count} orders",
     "eligibleOrders": "Orders included in this operation"
+  },
+  "dataTable": {
+    "search": "Search {table}",
+    "searchPlaceholder": "Filter rows…",
+    "clear": "Clear search",
+    "empty": "No matching results.",
+    "pagination": "Pagination for {table}",
+    "pageSize": "Rows per page",
+    "page": "Page {page, number} of {pages, number} · {count, number} rows",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

@@ -9,9 +9,8 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { productService, productQueryKey } from "../../services/product-service";
 import type { Product } from "../../types";
-import { filterProducts, paginateProducts, type ProductFilters as Filters } from "../../utils";
+import { filterProducts, type ProductFilters as Filters } from "../../utils";
 import { ProductFilters, emptyProductFilters } from "../product-filters/product-filters";
-import { ProductPagination } from "../product-pagination/product-pagination";
 import { ProductTable } from "../product-table/product-table";
 import { ProductEditor } from "../product-editor/product-editor";
 
@@ -23,16 +22,12 @@ export function ProductCatalog({ initialCreate = false }: { initialCreate?: bool
   const query = useQuery({ queryKey, queryFn: productService.list });
   const mutation = useMutation({ mutationFn: productService.save });
   const [filters, setFilters] = useState(emptyProductFilters);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [editor, setEditor] = useState<{ product?: Product } | null>(initialCreate ? {} : null);
   const products = query.data ?? [];
   const filtered = filterProducts(products, filters);
-  const pagination = paginateProducts(filtered, page, pageSize);
 
   function changeFilters(next: Filters) {
     setFilters(next);
-    setPage(1);
   }
   function openEditor(product?: Product) {
     setEditor({ product });
@@ -72,9 +67,9 @@ export function ProductCatalog({ initialCreate = false }: { initialCreate?: bool
         />
       ) : (
         <>
-          <div className="bg-card border-border/60 min-w-0 overflow-hidden rounded-xl border shadow-xs">
+          <div className="min-w-0">
             {filtered.length ? (
-              <ProductTable products={pagination.items} onEdit={openEditor} />
+              <ProductTable products={filtered} onEdit={openEditor} />
             ) : (
               <AppState
                 title={t(products.length ? "noMatches" : "empty")}
@@ -91,19 +86,6 @@ export function ProductCatalog({ initialCreate = false }: { initialCreate?: bool
                 }
               />
             )}
-            <div className="border-border/50 border-t px-4 py-4 sm:px-5">
-              <ProductPagination
-                page={pagination.page}
-                totalPages={pagination.totalPages}
-                count={filtered.length}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={(size) => {
-                  setPageSize(size);
-                  setPage(1);
-                }}
-              />
-            </div>
           </div>
         </>
       )}

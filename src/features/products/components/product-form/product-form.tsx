@@ -2,10 +2,10 @@
 import { ActionSpinner, ActionFeedback } from "@/components/shared";
 
 import { useRef, useState } from "react";
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2 } from "lucide-react";
+import { ProductImageUpload } from "../product-image-upload/product-image-upload";
 import { Button } from "@/components/ui/button";
 import type { Product } from "../../types";
 import {
@@ -39,7 +39,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
     formState: { isSubmitting, isDirty, errors },
   } = form;
   const type = useWatch({ control, name: "type" });
-  const images = useFieldArray({ control, name: "images" });
+  const [imagesBusy, setImagesBusy] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const generationButtonRef = useRef<HTMLButtonElement>(null);
@@ -61,7 +61,9 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
       <form
         className="space-y-8 px-4 pb-4 sm:px-6"
         noValidate
-        onSubmit={handleSubmit(submit)}
+        onSubmit={handleSubmit(async (values) => {
+          if (!imagesBusy) await submit(values);
+        })}
         aria-busy={isSubmitting}
       >
         <fieldset disabled={isSubmitting} className="min-w-0 space-y-8">
@@ -97,37 +99,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
               {...register("description")}
             />
           </div>
-          <section className="space-y-3" aria-labelledby="images-heading">
-            <h3 id="images-heading" className="text-lg font-semibold">
-              {t("images")}
-            </h3>
-            <p className="text-muted-foreground text-sm">{t("imagesHint")}</p>
-            {images.fields.map((field, index) => (
-              <div key={field.id} className="flex items-start gap-2">
-                <div className="min-w-0 flex-1">
-                  <FormInput
-                    name={`images.${index}.url`}
-                    label={t("imageNumber", { number: index + 1 })}
-                    type="url"
-                    dir="ltr"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="mt-7"
-                  aria-label={t("removeImage", { number: index + 1 })}
-                  onClick={() => images.remove(index)}
-                >
-                  <Trash2 aria-hidden="true" />
-                </Button>
-              </div>
-            ))}
-            <Button type="button" variant="ghost" onClick={() => images.append({ url: "" })}>
-              <Plus aria-hidden="true" />
-              {t("addImage")}
-            </Button>
-          </section>
+          <ProductImageUpload onBusyChange={setImagesBusy} />
           {type === "simple" && (
             <div className="grid gap-4 sm:grid-cols-3">
               <FormInput
@@ -160,7 +132,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
           <Button
             type="button"
             variant="ghost"
-            disabled={isSubmitting}
+            disabled={isSubmitting || imagesBusy}
             onClick={() => {
               if (isDirty) setConfirmDiscard(true);
               else onCancel();
@@ -168,7 +140,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
           >
             {t("cancel")}
           </Button>
-          <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || imagesBusy} aria-busy={isSubmitting}>
             {isSubmitting && <ActionSpinner />}
             {t(isSubmitting ? "saving" : "save")}
           </Button>

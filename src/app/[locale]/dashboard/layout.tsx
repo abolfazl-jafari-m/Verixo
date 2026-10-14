@@ -11,7 +11,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div>
       <SidebarProvider className={"has-data-[variant=inset]:bg-sidebar/20"}>
         <AppSidebar variant={"inset"} side={locale === "fa" ? "right" : "left"} />
-        <SidebarInset className={"overflow-hidden"}>
+        <SidebarInset className={"min-w-0 overflow-clip"}>
           <AppHeader />
           {children}
           <MobileNavigation />

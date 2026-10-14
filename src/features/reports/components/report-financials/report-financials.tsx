@@ -1,14 +1,7 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared";
 import { AppState } from "@/components/shared";
 import { formatReportDate } from "../../date-range";
 import { orderDateKey } from "@/features/orders/utils";
@@ -83,30 +76,31 @@ export function ReportFinancials() {
         <h3 className="font-medium">{t("expenses")}</h3>
         <p className="text-muted-foreground text-xs">{t("expensesHint")}</p>
         {report.expenses.length ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {["category", "amount", "date"].map((key) => (
-                  <TableHead key={key} className="text-start">
-                    {t(key)}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {report.expenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell>{expense.title || t(`categories.${expense.category}`)}</TableCell>
-                  <TableCell>
-                    {new Intl.NumberFormat(locale).format(expense.amount)} {t("currency")}
-                  </TableCell>
-                  <TableCell>
-                    {formatReportDate(orderDateKey(expense.occurredAt), locale)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable
+            data={report.expenses}
+            caption={t("expenses")}
+            getRowId={(row) => row.id}
+            search={{ getValue: (row) => row.title + " " + t(`categories.${row.category}`) }}
+            columns={[
+              {
+                id: "category",
+                accessorFn: (row) => row.category,
+                header: t("category"),
+                cell: ({ row }) => row.original.title || t(`categories.${row.original.category}`),
+              },
+              {
+                id: "amount",
+                header: t("amount"),
+                cell: ({ row }) =>
+                  new Intl.NumberFormat(locale).format(row.original.amount) + " " + t("currency"),
+              },
+              {
+                id: "date",
+                header: t("date"),
+                cell: ({ row }) => formatReportDate(orderDateKey(row.original.occurredAt), locale),
+              },
+            ]}
+          />
         ) : (
           <AppState title={t(report.completeness.expenses ? "zeroExpenses" : "noExpenses")} />
         )}

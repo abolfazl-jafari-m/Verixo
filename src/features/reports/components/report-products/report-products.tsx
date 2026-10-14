@@ -2,14 +2,9 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { ProductPerformance } from "../../types";
 import { AppState } from "@/components/shared";
 import { productKeys } from "../../export-data";
 import { useReport } from "../report-provider/report-provider";
@@ -25,6 +20,38 @@ export function ReportProducts() {
   const products = [...report.products].sort(
     (a, b) => (b[sortKey] ?? -Infinity) - (a[sortKey] ?? -Infinity) || a.id.localeCompare(b.id),
   );
+  const columns: ColumnDef<ProductPerformance>[] = productKeys.map((key) => ({
+    id: key,
+    accessorFn: (row) => row[key],
+    header: t(`columns.${key}`),
+    cell: ({ row }) => {
+      const product = row.original;
+      return (
+        <div className={key === "name" ? "min-w-44 font-medium" : "tabular-nums"}>
+          {product[key] === null ? (
+            t("unavailable")
+          ) : key === "name" ? (
+            <div>
+              <bdi>{product.name}</bdi>
+              {product.variants.length > 0 && (
+                <p className="text-muted-foreground mt-1 max-w-56 text-xs font-normal whitespace-normal">
+                  <span>{t("variants")}: </span>
+                  <bdi>{product.variants.join(" / ")}</bdi>
+                </p>
+              )}
+            </div>
+          ) : (
+            new Intl.NumberFormat(
+              locale,
+              key === "share" || key === "costCoverage"
+                ? { style: "percent", maximumFractionDigits: 1 }
+                : { maximumFractionDigits: 0 },
+            ).format(Number(product[key]))
+          )}
+        </div>
+      );
+    },
+  }));
   return (
     <Card>
       <CardHeader>
@@ -49,52 +76,13 @@ export function ReportProducts() {
                 onChange={setSort}
               />
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {productKeys.map((key) => (
-                    <TableHead key={key} className="text-start">
-                      {t(`columns.${key}`)}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    {productKeys.map((key) => (
-                      <TableCell
-                        key={key}
-                        className={
-                          key === "name" ? "min-w-44 font-medium" : "text-start tabular-nums"
-                        }
-                      >
-                        {product[key] === null ? (
-                          t("unavailable")
-                        ) : key === "name" ? (
-                          <div>
-                            <bdi>{product.name}</bdi>
-                            {product.variants.length > 0 && (
-                              <p className="text-muted-foreground mt-1 max-w-56 text-xs font-normal whitespace-normal">
-                                <span>{t("variants")}: </span>
-                                <bdi>{product.variants.join(" / ")}</bdi>
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          new Intl.NumberFormat(
-                            locale,
-                            key === "share" || key === "costCoverage"
-                              ? { style: "percent", maximumFractionDigits: 1 }
-                              : { maximumFractionDigits: 0 },
-                          ).format(Number(product[key]))
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              data={products}
+              columns={columns}
+              caption={t("products")}
+              getRowId={(row) => row.id}
+              search={{ getValue: (row) => row.name + " " + row.variants.join(" ") }}
+            />
           </>
         ) : (
           <AppState title={t("noProducts")} description={t("tryRange")} />

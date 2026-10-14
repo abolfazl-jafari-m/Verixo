@@ -1,14 +1,7 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/shared";
 import { useReport } from "../report-provider/report-provider";
 
 export function ReportOrders() {
@@ -50,28 +43,31 @@ export function ReportOrders() {
           ))}
         </dl>
         <p className="text-muted-foreground text-xs leading-6">{t("cancellationHint")}</p>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {["status", "count", "amount"].map((key) => (
-                <TableHead key={key} className="text-start">
-                  {t(key)}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {report.statuses.map((row) => (
-              <TableRow key={row.status}>
-                <TableCell>{t(`statuses.${row.status}`)}</TableCell>
-                <TableCell>{new Intl.NumberFormat(locale).format(row.count)}</TableCell>
-                <TableCell>
-                  {new Intl.NumberFormat(locale).format(row.amount)} {t("currency")}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          data={report.statuses}
+          caption={t("orderAnalytics")}
+          getRowId={(row) => row.status}
+          search={{ getValue: (row) => t(`statuses.${row.status}`) }}
+          columns={[
+            {
+              id: "status",
+              accessorFn: (row) => row.status,
+              header: t("status"),
+              cell: ({ row }) => t(`statuses.${row.original.status}`),
+            },
+            {
+              id: "count",
+              header: t("count"),
+              cell: ({ row }) => new Intl.NumberFormat(locale).format(row.original.count),
+            },
+            {
+              id: "amount",
+              header: t("amount"),
+              cell: ({ row }) =>
+                new Intl.NumberFormat(locale).format(row.original.amount) + " " + t("currency"),
+            },
+          ]}
+        />
         <p className="text-muted-foreground text-xs">{t("statusHint")}</p>
       </CardContent>
     </Card>

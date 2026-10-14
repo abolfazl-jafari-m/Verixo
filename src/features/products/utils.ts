@@ -92,10 +92,3 @@ export function filterProducts(products: Product[], filters: ProductFilters) {
       ].some((value) => normalize(value).includes(search)),
   );
 }
-
-export function paginateProducts<T>(items: T[], requestedPage: number, pageSize: number) {
-  const size = Math.max(1, Math.floor(pageSize));
-  const totalPages = Math.max(1, Math.ceil(items.length / size));
-  const page = Math.min(Math.max(1, requestedPage), totalPages);
-  return { items: items.slice((page - 1) * size, page * size), page, totalPages };
-}

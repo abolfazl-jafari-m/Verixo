@@ -56,6 +56,10 @@ npm run dev
 
 Use Node.js and npm compatible with the versions in `package.json` and the lockfile. Open `http://localhost:3000/dashboard`. Persian is the default locale and uses unprefixed URLs. English uses `/en`, for example `/en/orders`. Locale detection is disabled; the URL controls the language.
 
+On-screen tables share shadcn/ui and TanStack Table filtering and pagination. Existing feature filters remain available; invoice printing includes every line regardless of the on-screen page or search. Report exports retain their full selected report scope.
+
+The dashboard action list derives invoice, customer-information, packing, and dispatch actions from active orders. Its send-invoice action marks the invoice sent in the browser-local demo; no message is delivered. Product forms accept image URLs and local PNG/JPEG/WebP files (up to 2 MB and 4096 × 4096 pixels per image); local images remain in the in-memory catalog and are not uploaded to a server. The header avatar uses the saved shop logo with shop-name initials as a fallback.
+
 No backend credentials are required for the demo. Products reset on a full refresh; orders and saved business settings persist only in this browser and origin.
 
 ## Available commands

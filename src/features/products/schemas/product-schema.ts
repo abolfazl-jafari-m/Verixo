@@ -70,7 +70,13 @@ export const productFormSchema = z
           .string()
           .trim()
           .url("imageUrl")
-          .refine((url) => /^https?:\/\//i.test(url), "imageUrl"),
+          .refine(
+            (url) =>
+              /^https?:\/\//i.test(url) ||
+              (url.length <= 2_666_700 &&
+                /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(url)),
+            "imageUrl",
+          ),
       }),
     ),
     attributes: attributesSchema,

@@ -4,7 +4,18 @@ import { AppState, ContentSkeleton, ActionFeedback } from "@/components/shared";
 import { toast } from "@/components/ui/toast";
 import { useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { CheckCircle2, Clock3, Layers3, Package, Plus, Search, Truck, X } from "lucide-react";
+import {
+  Archive,
+  CheckCheck,
+  CheckCircle2,
+  Clock3,
+  Layers3,
+  Package,
+  Plus,
+  Search,
+  Truck,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/lib/i18n/navigations";
@@ -72,7 +83,13 @@ export function OrdersWorkspace() {
     <div className="min-w-0 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">{t("demo")}</p>
-        <Button variant="outline" nativeButton={false} render={<Link href="/orders/archive" />}>
+        <Button
+          variant="ghost"
+          className="bg-muted/40 h-10 gap-2 rounded-xl"
+          nativeButton={false}
+          render={<Link href="/orders/archive" />}
+        >
+          <Archive className="size-4" aria-hidden="true" />
           {archive("title")}
         </Button>
         <Button nativeButton={false} render={<Link href="/orders/create" />} className="h-10 gap-2">
@@ -173,14 +190,16 @@ export function OrdersWorkspace() {
         <AppState title={orders.length ? t("noResults") : t("noOrders")} />
       )}
       {ready && (
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="border-border/40 bg-muted/20 flex flex-wrap items-center gap-3 rounded-2xl border p-3">
           <Button
-            variant="outline"
+            variant="ghost"
+            className="h-9 gap-2 rounded-xl"
             disabled={!filtered.some(canArchiveOrder)}
             onClick={() =>
               setLabelSelection(filtered.filter(canArchiveOrder).map((order) => order.id))
             }
           >
+            <CheckCheck className="size-4" aria-hidden="true" />
             {archive("selectEligible")}
           </Button>
           <ArchiveAction
@@ -189,7 +208,7 @@ export function OrdersWorkspace() {
               setLabelSelection((ids) => ids.filter((id) => !changed.includes(id)))
             }
           />
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground ms-auto text-xs" role="status">
             {archive("selection", {
               selected: selectedOrders(filtered, labelSelection).length,
               eligible: selectedOrders(filtered, labelSelection).filter(canArchiveOrder).length,

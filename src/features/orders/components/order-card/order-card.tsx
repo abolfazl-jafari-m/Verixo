@@ -12,6 +12,16 @@ import { OrderCardMenu } from "../order-card-menu/order-card-menu";
 import { OrderInvoiceDialog } from "../order-invoice-dialog/order-invoice-dialog";
 import { OrderCardContent } from "./order-card-content";
 
+const actionStyles: Partial<Record<OrderStatus, string>> = {
+  pending_payment:
+    "bg-success-50 text-success-800 hover:bg-success-100 dark:bg-success-900/25 dark:text-success-300 dark:hover:bg-success-900/40",
+  paid: "bg-info-50 text-info-800 hover:bg-info-100 dark:bg-info-900/25 dark:text-info-300 dark:hover:bg-info-900/40",
+  packaged:
+    "bg-primary-50 text-primary-800 hover:bg-primary-100 dark:bg-primary-950/40 dark:text-primary-300 dark:hover:bg-primary-900/50",
+  courier:
+    "bg-success-50 text-success-800 hover:bg-success-100 dark:bg-success-900/25 dark:text-success-300 dark:hover:bg-success-900/40",
+};
+
 interface OrderCardProps {
   order: Order;
   handle?: ReactNode;
@@ -89,10 +99,10 @@ export function OrderCard({ order, handle, selection, onOpen, onMove }: OrderCar
           {pendingPayment && onMove && <OrderInvoiceDialog order={order} />}
           {nextStatus && onMove ? (
             <Button
-              variant={pendingPayment ? "ghost" : "secondary"}
+              variant="ghost"
               className={cn(
                 "h-auto min-h-9 gap-2 rounded-lg px-2 py-2 text-xs font-medium whitespace-normal",
-                !pendingPayment && presentation.badge,
+                actionStyles[order.status],
               )}
               disabled={!canMoveOrder(order, nextStatus)}
               title={!canMoveOrder(order, nextStatus) ? t("customerFlow.blocked") : undefined}

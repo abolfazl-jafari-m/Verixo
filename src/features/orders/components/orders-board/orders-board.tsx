@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
-  closestCorners,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -18,6 +18,8 @@ import { isOrderStatus, orderStatuses, type Order, type OrderStatus } from "../.
 import { OrderCard } from "../order-card/order-card";
 import { columnKeyboardCoordinates } from "./keyboard-coordinates";
 import { canMoveOrder } from "../../mock-workflow";
+import { useBoardAutoScroll } from "./use-board-auto-scroll";
+import { boardCollisions } from "./board-collisions";
 
 import { OrdersKanbanColumn } from "../orders-kanban-column/orders-kanban-column";
 import { DraggableOrder } from "../draggable-order/draggable-order";
@@ -35,6 +37,8 @@ export function OrdersBoard({
 }) {
   const t = useTranslations("orders");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const horizontalScroll = useBoardAutoScroll(boardRef);
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 8 } }),
@@ -45,7 +49,12 @@ export function OrdersBoard({
     <DndContext
       id="orders-board"
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={(args) =>
+        boardCollisions(args, boardRef.current?.getBoundingClientRect())
+      }
+      // Core 6.3.1 assumes nonnegative scrollLeft. Handle this board's RTL/LTR
+      // horizontal scrolling ourselves; retain the library's vertical scrolling.
+      autoScroll={{ canScroll: (element) => element !== boardRef.current }}
       accessibility={{
         screenReaderInstructions: { draggable: t("dragInstructions") },
         announcements: {
@@ -64,14 +73,26 @@ export function OrdersBoard({
           onDragCancel: () => t("dragCanceled"),
         },
       }}
-      onDragStart={({ active }) => setActiveId(String(active.id))}
-      onDragCancel={() => setActiveId(null)}
-      onDragEnd={({ active, over }) => {
-        if (over && isOrderStatus(over.id)) onMove(String(active.id), over.id);
+      onDragStart={({ active, activatorEvent }) => {
+        setActiveId(String(active.id));
+        horizontalScroll.start(activatorEvent);
+      }}
+      onDragCancel={() => {
+        horizontalScroll.stop();
         setActiveId(null);
+      }}
+      onDragEnd={({ active, over }) => {
+        horizontalScroll.stop();
+        setActiveId(null);
+        const order = orders.find((item) => item.id === active.id);
+        if (order && over && isOrderStatus(over.id) && order.status !== over.id) {
+          // The provider remains responsible for validation and failure feedback.
+          onMove(order.id, over.id);
+        }
       }}
     >
       <div
+        ref={boardRef}
         className={cn(
           "focus-visible:ring-ring flex w-full max-w-full min-w-0 justify-between gap-4 overflow-x-auto overscroll-x-contain rounded-2xl p-0.5 pb-4 outline-none focus-visible:ring-2",
           styles.scrollbar,
@@ -102,13 +123,17 @@ export function OrdersBoard({
           );
         })}
       </div>
-      <DragOverlay dropAnimation={null}>
-        {activeOrder && (
-          <div className="ring-primary/40 rounded-xl shadow-2xl ring-2">
-            <OrderCard order={activeOrder} />
-          </div>
+      {typeof document !== "undefined" &&
+        createPortal(
+          <DragOverlay dropAnimation={null}>
+            {activeOrder && (
+              <div className="ring-primary/40 rounded-xl shadow-2xl ring-2">
+                <OrderCard order={activeOrder} />
+              </div>
+            )}
+          </DragOverlay>,
+          document.body,
         )}
-      </DragOverlay>
     </DndContext>
   );
 }

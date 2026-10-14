@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { DataTable } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { orderTotals } from "@/features/orders/utils";
@@ -87,51 +88,43 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
           </div>
         )}
       </dl>
-      <table className="block w-full text-start text-xs sm:table">
-        <caption className="sr-only">{t("items")}</caption>
-        <thead className="bg-muted/40 hidden sm:table-header-group">
-          <tr>
-            {["product", "quantity", "unitPrice", "lineTotal"].map((key) => (
-              <th key={key} scope="col" className="p-3 text-start font-medium">
-                {t(key)}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="block sm:table-row-group">
-          {invoice.lines.map((line, index) => (
-            <tr
-              key={`${line.productId}-${index}`}
-              className="border-border/50 grid grid-cols-3 gap-3 border-b py-3 sm:table-row"
-            >
-              <td className="col-span-3 min-w-0 sm:p-3">
-                <p className="font-medium break-words">{line.name}</p>
-                {line.variantLabel && (
-                  <p className="text-muted-foreground mt-1">{line.variantLabel}</p>
+      <DataTable
+        data={invoice.lines}
+        caption={t("items")}
+        getRowId={(line, index) => line.productId + "-" + index}
+        printAllRows
+        search={{ getValue: (line) => line.name + " " + (line.variantLabel ?? "") }}
+        columns={[
+          {
+            id: "product",
+            accessorFn: (row) => row.name,
+            header: t("product"),
+            cell: ({ row }) => (
+              <div className="max-w-64 min-w-40 whitespace-normal">
+                <p className="font-medium break-words">{row.original.name}</p>
+                {row.original.variantLabel && (
+                  <p className="text-muted-foreground mt-1 text-xs">{row.original.variantLabel}</p>
                 )}
-              </td>
-              <td className="tabular-nums sm:p-3">
-                <span className="text-muted-foreground mb-1 block text-[10px] sm:hidden">
-                  {t("quantity")}
-                </span>
-                {f.number(line.quantity)}
-              </td>
-              <td className="tabular-nums sm:p-3">
-                <span className="text-muted-foreground mb-1 block text-[10px] sm:hidden">
-                  {t("unitPrice")}
-                </span>
-                {f.number(line.unitPrice)}
-              </td>
-              <td className="font-medium tabular-nums sm:p-3">
-                <span className="text-muted-foreground mb-1 block text-[10px] sm:hidden">
-                  {t("lineTotal")}
-                </span>
-                {f.number(line.quantity * line.unitPrice)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            ),
+          },
+          {
+            id: "quantity",
+            header: t("quantity"),
+            cell: ({ row }) => f.number(row.original.quantity),
+          },
+          {
+            id: "unitPrice",
+            header: t("unitPrice"),
+            cell: ({ row }) => f.number(row.original.unitPrice),
+          },
+          {
+            id: "lineTotal",
+            header: t("lineTotal"),
+            cell: ({ row }) => f.number(row.original.quantity * row.original.unitPrice),
+          },
+        ]}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
         <p className="text-muted-foreground text-xs">
           {t("amountsIn", { currency: t("currency") })}
