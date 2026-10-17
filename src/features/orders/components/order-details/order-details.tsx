@@ -1,4 +1,5 @@
 "use client";
+import { InventoryException } from "../inventory-exception/inventory-exception";
 
 import { statusPresentation } from "../../status-presentation";
 
@@ -91,6 +92,7 @@ export function OrderDetails({
             </div>
             <div className="flex min-h-0 flex-col gap-6 overflow-y-auto px-5 py-5 sm:px-6">
               <OrderProgress status={order.status} />
+              <InventoryException order={order} />
               <section className="bg-muted/25 space-y-3 rounded-2xl p-4">
                 <p className="text-sm font-medium">
                   {t(`customerFlow.${order.customerInformationStatus}`)}

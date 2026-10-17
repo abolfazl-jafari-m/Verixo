@@ -97,7 +97,9 @@ export function OrderProductRow({
       </div>
       <div className="flex flex-wrap justify-between gap-2 text-xs">
         <span className="text-muted-foreground">
-          {t("available", { count: selection?.stock ?? 0 })}
+          {selection?.trackInventory === false
+            ? t("untrackedInventory")
+            : t("available", { count: selection?.stock ?? 0 })}
         </span>
         <span className="font-medium">
           {t("lineTotal")}: {f.number(amount)} {t("currency")}

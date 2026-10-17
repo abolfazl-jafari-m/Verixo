@@ -1,5 +1,6 @@
 "use client";
 
+import { InventoryFields } from "../product-form/inventory-fields";
 import { useState, type Ref } from "react";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
@@ -102,14 +103,7 @@ export function VariantEditor({
               step="any"
               numeric
             />
-            <FormInput
-              name={`variants.${index}.stock`}
-              label={t("stock")}
-              type="number"
-              min="0"
-              step="1"
-              numeric
-            />
+            <InventoryFields index={index} />
             <CostPriceInput name={`variants.${index}.costPrice`} />
           </div>
           <label className="flex items-center gap-2 text-sm">

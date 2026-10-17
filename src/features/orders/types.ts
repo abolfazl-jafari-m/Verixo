@@ -42,7 +42,21 @@ export interface OrderLine {
   adjustments?: OrderLineAdjustments;
 }
 
+export interface InventoryRequirement {
+  productId: string;
+  variantId?: string;
+  name: string;
+  quantity: number;
+  available: number;
+}
+export interface OrderInventory {
+  reason?: "storage";
+  state: "reserved" | "committed" | "released" | "exception";
+  issues: InventoryRequirement[];
+}
+
 export interface Order {
+  inventory?: OrderInventory;
   archivedAt: string | null;
   id: string;
   number: string;

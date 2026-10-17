@@ -11,6 +11,7 @@ The primary workflow is to move an order through invoice, payment, customer-info
 | Application layout | Sidebar, mobile navigation, theme switching, Persian RTL and English LTR routing                                 |
 | Dashboard          | Sales charts, KPI cards, daily summaries, shipments, and orders requiring action; much of the data is static     |
 | Products           | Create/edit simple and variable products, attributes, variants, price/cost/stock fields, filters, and pagination |
+| Inventory          | Per-item stock, reservations, alerts, adjustments, and paid-order inventory exceptions                           |
 | Orders             | Creation from the catalog, Kanban board, status transitions, customer-information form, and archive/restore      |
 | Invoices           | Lists, editing before payment, historical shop snapshots, public-token demo pages, and browser printing          |
 | Customers          | Search, filters, details, and order history derived from demo contacts and orders                                |
@@ -39,7 +40,7 @@ src/
   app/             Routes, layouts, and route composition
   components/      Shared layout and low-level UI components
   features/        Auth, dashboard, products, orders, invoices, customers,
-                   reports, shipping labels, and settings
+                   inventory, reports, shipping labels, and settings
   lib/             Shared infrastructure and utilities
   providers/       Theme, query, and internationalization providers
   locales/         Translation messages
@@ -58,9 +59,9 @@ Use Node.js and npm compatible with the versions in `package.json` and the lockf
 
 On-screen tables share shadcn/ui and TanStack Table filtering and pagination. Existing feature filters remain available; invoice printing includes every line regardless of the on-screen page or search. Report exports retain their full selected report scope.
 
-The dashboard action list derives invoice, customer-information, packing, and dispatch actions from active orders. Its send-invoice action marks the invoice sent in the browser-local demo; no message is delivered. Product forms accept image URLs and local PNG/JPEG/WebP files (up to 2 MB and 4096 × 4096 pixels per image); local images remain in the in-memory catalog and are not uploaded to a server. The header avatar uses the saved shop logo with shop-name initials as a fallback.
+The dashboard action list derives invoice, customer-information, packing, and dispatch actions from active orders. Its send-invoice action marks the invoice sent in the browser-local demo; no message is delivered. Product forms accept image URLs and local PNG/JPEG/WebP files (up to 2 MB and 4096 × 4096 pixels per image); local images remain in the browser-local catalog and are not uploaded to a server. The header avatar uses the saved shop logo with shop-name initials as a fallback.
 
-No backend credentials are required for the demo. Products reset on a full refresh; orders and saved business settings persist only in this browser and origin.
+No backend credentials are required for the demo. Products, inventory, orders and saved business settings persist only in this browser and origin.
 
 ## Available commands
 
@@ -81,14 +82,14 @@ There is no `npm test` script. The retained Vitest project named `reports` cover
 
 ## Data ownership and demo boundaries
 
-| Data      | Source and lifetime                                                                                                           |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Products  | `features/products/services/product-service.ts`: in-memory repository shared through the product query key; resets on refresh |
-| Orders    | `OrdersProvider`: mock seeds merged with validated per-order `localStorage` records                                           |
-| Settings  | `features/settings/storage.ts`: versioned, section-specific browser records; unsaved drafts are separate                      |
-| Customers | Demo contacts plus customer information grouped from orders; no backend customer identity                                     |
-| Reports   | Pure calculations over orders and the demo ledger, with explicit completeness flags                                           |
-| Dashboard | Largely independent fixtures rather than live summaries of the order workflow                                                 |
+| Data      | Source and lifetime                                                                                                                                                  |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Products  | `features/products/services/product-service.ts`: browser-local inventory repository shared through the product query key; persists products and reservation receipts |
+| Orders    | `OrdersProvider`: mock seeds merged with validated per-order `localStorage` records                                                                                  |
+| Settings  | `features/settings/storage.ts`: versioned, section-specific browser records; unsaved drafts are separate                                                             |
+| Customers | Demo contacts plus customer information grouped from orders; no backend customer identity                                                                            |
+| Reports   | Pure calculations over orders and the demo ledger, with explicit completeness flags                                                                                  |
+| Dashboard | Largely independent fixtures rather than live summaries of the order workflow                                                                                        |
 
 - Order lines snapshot selling price and purchase cost on submission. Later catalog edits must not change historical costs.
 - Invoice branding/contact settings are snapshotted on creation; changes apply to future invoices.
@@ -96,6 +97,16 @@ There is no `npm test` script. The retained Vitest project named `reports` cover
 - Archiving is separate from cancellation or deletion and must preserve financial history.
 - Public invoice/customer-form tokens are local demo identifiers. New links cannot retrieve this browser's records on another device.
 - Marking an invoice as sent or an order as paid is a simulation, not proof of delivery or a verified payment.
+
+## Inventory behavior and persistence
+
+The existing product/variant `stock` field is physical stock. Missing inventory fields default to tracking enabled, zero reserved and a threshold of five. Available stock is physical minus reserved. Untracked items do not block sales or generate alerts; active variants contribute independently to summaries. Inventory cost value is intentionally omitted where cost coverage is unknown.
+
+Payment confirmation (including creation as paid) reserves all required tracked items together. Duplicate lines are aggregated. Insufficient or missing stock preserves payment, creates an inventory exception and blocks fulfillment; sellers can adjust stock and retry. Delivery commits physical deductions exactly once. Historical delivered orders without inventory metadata are not deducted retroactively. Paid unfinished demo orders are checked on initialization. Existing order snapshots and timestamps remain unchanged.
+
+`features/inventory/domain.ts` owns calculations, reservation, completion, release and adjustment rules. `repository.ts` publishes products and per-order receipts in one versioned localStorage snapshot. Order records remain in their existing per-order store. Receipts recover inventory metadata/payment and missing orders if the later order write fails. Storage failures remain visible; unsaved stock edits stay in the dialog. Active reservations prevent removal, disabling or untracking of affected variants. Archive/restore does not mutate inventory. There is no cancellation status in the current UI; the service supports idempotent release, and release after completion does not restock goods.
+
+These are frontend demo protections, not durable storage or cross-tab/client concurrency guarantees. Large image data can exhaust browser storage. The authoritative Laravel implementation must combine stock checks, reservations, completion/release and event deduplication in database transactions. No backend, movement ledger, warehouse, payment verification or synchronization is implemented.
 
 ## Development principles
 

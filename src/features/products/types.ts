@@ -8,13 +8,19 @@ export interface ProductAttribute {
   useForVariants: boolean;
 }
 
-export interface ProductVariant {
+export interface InventoryFields {
+  stock: number;
+  trackInventory?: boolean;
+  reservedQuantity?: number;
+  lowStockThreshold?: number;
+}
+
+export interface ProductVariant extends InventoryFields {
   id: string;
   sku?: string;
   attributeValues: Record<string, string>;
   price: number;
   costPrice: number | null;
-  stock: number;
   isActive: boolean;
 }
 
@@ -29,11 +35,10 @@ export interface ProductBase {
   createdAt: string;
 }
 
-export interface SimpleProduct extends ProductBase {
+export interface SimpleProduct extends ProductBase, InventoryFields {
   type: "simple";
   price: number;
   costPrice: number | null;
-  stock: number;
 }
 
 export interface VariableProduct extends ProductBase {

@@ -52,6 +52,9 @@ export const variantSchema = z.object({
   price,
   costPrice: costPriceSchema,
   stock,
+  trackInventory: z.boolean().optional(),
+  reservedQuantity: stock.optional(),
+  lowStockThreshold: stock.optional(),
   isActive: z.boolean(),
 });
 
@@ -83,6 +86,9 @@ export const productFormSchema = z
     price: z.number().or(z.nan()),
     costPrice: z.number().or(z.nan()).nullable(),
     stock: z.number().or(z.nan()),
+    trackInventory: z.boolean().optional(),
+    reservedQuantity: stock.optional(),
+    lowStockThreshold: stock.optional(),
     variants: z.array(
       z.object({
         id: z.string(),
@@ -91,12 +97,17 @@ export const productFormSchema = z
         price: z.number().or(z.nan()),
         costPrice: z.number().or(z.nan()).nullable(),
         stock: z.number().or(z.nan()),
+        trackInventory: z.boolean().optional(),
+        reservedQuantity: stock.optional(),
+        lowStockThreshold: stock.optional(),
         isActive: z.boolean(),
       }),
     ),
   })
   .superRefine((values, ctx) => {
     if (values.type === "simple") {
+      if (values.stock < (values.reservedQuantity ?? 0))
+        ctx.addIssue({ code: "custom", path: ["stock"], message: "reservedStock" });
       for (const [field, schema] of [
         ["price", price],
         ["costPrice", costPriceSchema],
@@ -122,6 +133,12 @@ export const productFormSchema = z
     if (!values.variants.some((variant) => variant.isActive))
       ctx.addIssue({ code: "custom", path: ["variants"], message: "activeVariant" });
     values.variants.forEach((variant, index) => {
+      if (variant.stock < (variant.reservedQuantity ?? 0))
+        ctx.addIssue({
+          code: "custom",
+          path: ["variants", index, "stock"],
+          message: "reservedStock",
+        });
       const result = variantSchema.safeParse(variant);
       if (!result.success)
         result.error.issues.forEach((issue) =>
@@ -160,11 +177,17 @@ export function productDefaults(product?: Product): ProductFormValues {
     price: product?.type === "simple" ? product.price : 0,
     costPrice: product?.type === "simple" ? (product.costPrice ?? null) : null,
     stock: product?.type === "simple" ? product.stock : 0,
+    trackInventory: product?.type === "simple" ? (product.trackInventory ?? true) : true,
+    reservedQuantity: product?.type === "simple" ? (product.reservedQuantity ?? 0) : 0,
+    lowStockThreshold: product?.type === "simple" ? (product.lowStockThreshold ?? 5) : 5,
     variants:
       product?.type === "variable"
         ? product.variants.map((variant) => ({
             ...variant,
             costPrice: variant.costPrice ?? null,
+            trackInventory: variant.trackInventory ?? true,
+            reservedQuantity: variant.reservedQuantity ?? 0,
+            lowStockThreshold: variant.lowStockThreshold ?? 5,
             sku: variant.sku ?? "",
           }))
         : [],
@@ -194,6 +217,9 @@ export function toProduct(
         price: values.price,
         costPrice: values.costPrice,
         stock: values.stock,
+        trackInventory: values.trackInventory ?? true,
+        reservedQuantity: values.reservedQuantity ?? 0,
+        lowStockThreshold: values.lowStockThreshold ?? 5,
       }
     : {
         ...base,

@@ -1,3 +1,4 @@
+import { inventoryValues } from "@/features/inventory/domain";
 import type { Product } from "@/features/products/types";
 import type { OrderLine, OrderStatus, PaymentStatus } from "./types";
 
@@ -27,7 +28,8 @@ export function selectedProduct(product: Product | undefined, variantId: string)
     return {
       price: product.price,
       costPrice: product.costPrice ?? null,
-      stock: product.stock,
+      stock: inventoryValues(product).available,
+      trackInventory: inventoryValues(product).tracked,
       label: undefined,
     };
   const variant = product.variants.find((item) => item.id === variantId && item.isActive);
@@ -35,7 +37,8 @@ export function selectedProduct(product: Product | undefined, variantId: string)
   return {
     price: variant.price,
     costPrice: variant.costPrice ?? null,
-    stock: variant.stock,
+    stock: inventoryValues(variant).available,
+    trackInventory: inventoryValues(variant).tracked,
     label: Object.values(variant.attributeValues).join(" / "),
   };
 }

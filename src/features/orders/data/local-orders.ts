@@ -7,7 +7,22 @@ import { orderStatuses, shippingMethods, type Order } from "../types";
 // Browser-local demo storage, not a public link service or authorization boundary.
 // Per-order records keep edits to different orders in separate tabs independent.
 export const localOrderPrefix = "verixo:mock-orders:v1:";
-const storedOrderSchema = z.object({
+export const storedOrderSchema = z.object({
+  inventory: z
+    .object({
+      reason: z.literal("storage").optional(),
+      state: z.enum(["reserved", "committed", "released", "exception"]),
+      issues: z.array(
+        z.object({
+          productId: z.string(),
+          variantId: z.string().optional(),
+          name: z.string(),
+          quantity: z.number().int().positive(),
+          available: z.number().nonnegative(),
+        }),
+      ),
+    })
+    .optional(),
   id: z.string(),
   number: z.string(),
   notes: z.string(),

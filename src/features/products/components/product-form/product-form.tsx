@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
+import { InventoryFields } from "./inventory-fields";
 import { ProductImageUpload } from "../product-image-upload/product-image-upload";
 import { Button } from "@/components/ui/button";
 import type { Product } from "../../types";
@@ -42,8 +43,12 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   const [imagesBusy, setImagesBusy] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [pendingStockSave, setPendingStockSave] = useState<ProductFormValues | null>(null);
+  const saving = useRef(false);
   const generationButtonRef = useRef<HTMLButtonElement>(null);
   async function submit(values: ProductFormValues) {
+    if (saving.current) return;
+    saving.current = true;
     setSaveError(false);
     try {
       await onSave(
@@ -54,6 +59,8 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
       );
     } catch {
       setSaveError(true);
+    } finally {
+      saving.current = false;
     }
   }
   return (
@@ -61,9 +68,23 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
       <form
         className="space-y-8 px-4 pb-4 sm:px-6"
         noValidate
-        onSubmit={handleSubmit(async (values) => {
-          if (!imagesBusy) await submit(values);
-        })}
+        onSubmit={(event) => {
+          void handleSubmit(async (values) => {
+            if (imagesBusy) return;
+            const stockChanged =
+              product &&
+              (product.type !== values.type ||
+                (product.type === "simple"
+                  ? product.stock !== values.stock
+                  : product.variants.some(
+                      (variant) =>
+                        values.variants.find((item) => item.id === variant.id)?.stock !==
+                        variant.stock,
+                    )));
+            if (stockChanged) setPendingStockSave(values);
+            else await submit(values);
+          })(event);
+        }}
         aria-busy={isSubmitting}
       >
         <fieldset disabled={isSubmitting} className="min-w-0 space-y-8">
@@ -110,7 +131,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
                 min="0"
                 step="any"
               />
-              <FormInput name="stock" label={t("stock")} numeric type="number" min="0" step="1" />
+              <InventoryFields />
               <CostPriceInput name="costPrice" />
             </div>
           )}
@@ -146,6 +167,18 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
           </Button>
         </div>
       </form>
+      <ProductConfirmation
+        open={pendingStockSave !== null}
+        description={t("confirmStockSave")}
+        onCancel={() => setPendingStockSave(null)}
+        onConfirm={() => {
+          if (pendingStockSave) {
+            const values = pendingStockSave;
+            setPendingStockSave(null);
+            void handleSubmit(() => submit(values))();
+          }
+        }}
+      />
       <ProductConfirmation
         open={confirmDiscard}
         description={t("discard")}

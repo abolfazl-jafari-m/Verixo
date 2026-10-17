@@ -15,6 +15,8 @@ export function customerFormPath(token: string, locale: string) {
 }
 
 export function canMoveOrder(order: Order, status: OrderStatus) {
+  if (order.inventory?.state === "exception" && status !== "paid" && status !== "pending_payment")
+    return false;
   if (status === order.status) return true;
   if (status === "pending_payment") return order.payment === "pending";
   if (status === "paid") return true; // Existing confirmation action / drop into Paid.

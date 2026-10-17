@@ -1,6 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { productQueryKey } from "@/features/products/services/product-service";
+import { inventoryRepository, inventoryStorageKey } from "@/features/inventory/repository";
 import { mockOrders } from "../../data/mock-orders";
 import { localOrderPrefix, readLocalOrders, writeLocalOrder } from "../../data/local-orders";
 import type { CreateOrderValues, Order, OrderStatus } from "../../types";
@@ -20,6 +23,7 @@ import { invoiceSettingsSnapshot } from "@/features/settings/model";
 import { changeOrderArchive, type ArchiveResult } from "../../archive";
 
 interface OrdersContextValue {
+  resolveInventory: (id: string) => void;
   archiveOrders: (ids: string[], restore?: boolean) => ArchiveResult;
   orders: Order[];
   ready: boolean;
@@ -35,6 +39,7 @@ interface OrdersContextValue {
 const OrdersContext = createContext<OrdersContextValue | null>(null);
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const currentOrders = useRef(orders);
   const [ready, setReady] = useState(false);
@@ -44,6 +49,21 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     function refresh() {
       const result = readLocalOrders(currentOrders.current);
+      try {
+        result.orders = inventoryRepository.recoverOrders(result.orders).map((order) => {
+          if (order.payment === "paid" && order.status !== "delivered" && !order.inventory)
+            return inventoryRepository.applyOrder(order, "reserve");
+          return order;
+        });
+        void queryClient.invalidateQueries({ queryKey: productQueryKey });
+      } catch {
+        result.available = false;
+        result.orders = result.orders.map((order) =>
+          order.payment === "paid" && order.status !== "delivered"
+            ? { ...order, inventory: { state: "exception", reason: "storage", issues: [] } }
+            : order,
+        );
+      }
       currentOrders.current = result.orders;
       setOrders(result.orders);
       setStorageAvailable(result.available);
@@ -51,7 +71,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
     refresh();
     function onStorage(event: StorageEvent) {
-      if (event.key?.startsWith(localOrderPrefix)) refresh();
+      if (event.key?.startsWith(localOrderPrefix) || event.key === inventoryStorageKey) refresh();
     }
     window.addEventListener("storage", onStorage);
     window.addEventListener("focus", refresh);
@@ -59,16 +79,44 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("focus", refresh);
     };
-  }, []);
+  }, [queryClient]);
 
   function latestOrders() {
-    return readLocalOrders(currentOrders.current).orders;
+    const current = readLocalOrders(currentOrders.current).orders;
+    try {
+      return inventoryRepository.recoverOrders(current);
+    } catch {
+      return current;
+    }
   }
   function commit(order: Order, current: Order[]) {
+    if (order.payment === "paid" && order.status !== "delivered" && !order.inventory)
+      order = applyInventory(order, "reserve");
     const next = [order, ...current.filter((item) => item.id !== order.id)];
     currentOrders.current = next;
     setOrders(next);
-    setStorageAvailable(writeLocalOrder(order));
+    const saved = writeLocalOrder(order);
+    setStorageAvailable(saved && order.inventory?.reason !== "storage");
+  }
+  function applyInventory(order: Order, event: "reserve" | "complete") {
+    try {
+      const next = inventoryRepository.applyOrder(order, event);
+      void queryClient.invalidateQueries({ queryKey: productQueryKey });
+      return next;
+    } catch {
+      setStorageAvailable(false);
+      return {
+        ...order,
+        inventory: { state: "exception" as const, reason: "storage" as const, issues: [] },
+      };
+    }
+  }
+  function resolveInventory(id: string) {
+    const current = latestOrders();
+    const order = current.find((item) => item.id === id);
+    // A receipt may already have recovered a reservation after an order/storage write failed.
+    // Publish that recovered state too, so retry clears the visible exception immediately.
+    if (order?.payment === "paid") commit(applyInventory(order, "reserve"), current);
   }
   function createOrder(values: CreateOrderValues) {
     const shop = readSettingsSection("shop");
@@ -146,7 +194,27 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     const current = latestOrders();
     const order = current.find((item) => item.id === id);
     if (!order || !canMoveOrder(order, status)) return false;
-    commit(transitionOrder(order, status), current);
+    let next = transitionOrder(order, status);
+    if (order.status === "delivered" && !order.inventory)
+      next.inventory = { state: "committed", issues: [] };
+    if (next.payment === "paid" && !next.inventory && order.status !== "delivered")
+      next = applyInventory(next, "reserve");
+    if (
+      next.inventory?.state === "exception" &&
+      status !== "paid" &&
+      status !== "pending_payment"
+    ) {
+      commit({ ...next, status: order.status }, current);
+      return false;
+    }
+    if (status === "delivered" && order.status !== "delivered") {
+      next = applyInventory(next, "complete");
+      if (next.inventory?.state === "exception") {
+        commit({ ...next, status: order.status }, current);
+        return false;
+      }
+    }
+    commit(next, current);
     return true;
   }
   function submitCustomerInformation(token: string, values: CustomerFormValues) {
@@ -180,6 +248,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     <OrdersContext.Provider
       value={{
         orders,
+        resolveInventory,
         archiveOrders,
         ready,
         storageAvailable,

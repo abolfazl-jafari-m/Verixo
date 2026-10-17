@@ -21,6 +21,7 @@ export const menu: Menu[] = [
         url: "/products",
         icon: Package,
       },
+      { title: "inventory", url: "/inventory", icon: Package },
       {
         title: "orders",
         url: "/orders",

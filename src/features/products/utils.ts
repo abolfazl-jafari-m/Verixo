@@ -56,6 +56,9 @@ export function reconcileVariants(
         price: 0,
         costPrice: null,
         stock: 0,
+        trackInventory: true,
+        reservedQuantity: 0,
+        lowStockThreshold: 5,
         isActive: true,
       },
   );

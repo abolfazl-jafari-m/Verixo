@@ -5,6 +5,7 @@ export type NavigationLabel =
   | "salesManagement"
   | "finance"
   | "account"
+  | "inventory"
   | "products"
   | "orders"
   | "customers"

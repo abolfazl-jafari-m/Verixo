@@ -41,7 +41,11 @@ export function createOrderFormSchema(products: Product[]) {
             path: ["lines", index, product?.type === "variable" ? "variantId" : "productId"],
             message: product?.type === "variable" ? "variant" : "product",
           });
-        else if ((quantities.get(`${line.productId}:${line.variantId}`) ?? 0) > selection.stock)
+        else if (
+          values.payment !== "paid" &&
+          selection.trackInventory &&
+          (quantities.get(`${line.productId}:${line.variantId}`) ?? 0) > selection.stock
+        )
           context.addIssue({
             code: "custom",
             path: ["lines", index, "quantity"],

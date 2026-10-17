@@ -20,6 +20,8 @@ export default defineConfig({
           name: "reports",
           environment: "node",
           include: [
+            "src/features/inventory/**/*.test.ts",
+            "src/features/inventory/**/*.test.tsx",
             "src/features/reports/**/*.test.ts",
             "src/features/products/**/*.test.ts",
             "src/features/orders/**/*.test.ts",

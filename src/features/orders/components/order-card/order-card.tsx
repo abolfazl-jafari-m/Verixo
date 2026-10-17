@@ -1,4 +1,5 @@
 "use client";
+import { InventoryException } from "../inventory-exception/inventory-exception";
 
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, GripVertical, MessageSquare } from "lucide-react";
@@ -89,6 +90,7 @@ export function OrderCard({ order, handle, selection, onOpen, onMove }: OrderCar
       >
         <OrderCardContent order={order} />
       </button>
+      <InventoryException order={order} />
       <div
         className={cn(
           "border-border/40 flex items-end gap-2 border-t px-3 py-2",

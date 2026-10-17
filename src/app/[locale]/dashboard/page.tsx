@@ -1,3 +1,4 @@
+import { InventoryAlert } from "@/features/inventory/components";
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
@@ -25,6 +26,7 @@ function DashboardPage() {
         </div>
       </header>
 
+      <InventoryAlert />
       <section className="lg:hidden" aria-label={t("salesSection")}>
         <div className="min-w-0">
           <SalesOverview />

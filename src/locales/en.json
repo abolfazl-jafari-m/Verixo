@@ -107,7 +107,8 @@
       "activeProducts": "{count} active products",
       "orderCount": "{count} orders",
       "customerCount": "{count} customers",
-      "dashboard": "Dashboard"
+      "dashboard": "Dashboard",
+      "inventory": "Inventory"
     }
   },
   "products": {
@@ -116,8 +117,8 @@
     "create": "Add product",
     "edit": "Edit product",
     "editNamed": "Edit {name}",
-    "demoNotice": "Demo catalog: changes are kept in this browser session and reset on refresh.",
-    "saved": "Product saved in this demo session.",
+    "demoNotice": "Browser-local demo. Products, stock and reservation receipts persist on this browser only. No cross-device synchronization or concurrent-client guarantee.",
+    "saved": "Product saved in this browser.",
     "name": "Product name",
     "description": "Description",
     "sku": "SKU (optional)",
@@ -154,7 +155,7 @@
     "loading": "Loading products…",
     "loadError": "Unable to load products.",
     "retry": "Try again",
-    "saveError": "Unable to save. Your changes are still here; try again.",
+    "saveError": "Could not save. Check browser storage and ensure stock covers reservations. Reserved variants cannot be removed, disabled or made untracked.",
     "cancel": "Cancel",
     "save": "Save product",
     "saving": "Saving…",
@@ -199,7 +200,9 @@
       "regenerate": "Attributes and variants do not match. Generate variants again before saving.",
       "activeVariant": "Keep at least one active variant.",
       "summary": "Please correct the highlighted fields before saving.",
-      "costPrice": "Enter a non-negative whole amount, or leave blank if unknown."
+      "costPrice": "Enter a non-negative whole amount, or leave blank if unknown.",
+      "reservedStock": "Enter whole, non-negative quantities. Physical stock cannot be below reserved stock.",
+      "lowStockThreshold": "Enter whole, non-negative quantities. Physical stock cannot be below reserved stock."
     },
     "confirmTitle": "Confirm changes",
     "continue": "Continue",
@@ -220,9 +223,10 @@
     "costPriceLabel": "Unit acquisition cost (Toman)",
     "costPriceHint": "Purchase price + allocated inbound acquisition costs. Excludes advertising, overhead, customer delivery and order packaging. Leave blank if unknown; enter 0 only for free inventory.",
     "uploadImages": "Upload product images",
-    "uploadHint": "Choose PNG, JPEG or WebP images up to 2 MB and 4096 × 4096 pixels each. Images stay in the demo catalog until refresh.",
+    "uploadHint": "Choose PNG, JPEG or WebP images up to 2 MB and 4096 × 4096 pixels each. Images are saved in this browser with the product; they are not uploaded to a server.",
     "readingImages": "Reading images…",
-    "uploadError": "Images could not be added. Choose valid PNG, JPEG or WebP files within the limits and try again."
+    "uploadError": "Images could not be added. Choose valid PNG, JPEG or WebP files within the limits and try again.",
+    "confirmStockSave": "Save these physical stock changes? Existing order reservations will be preserved. Reserved items cannot be removed or reduced below their reserved quantity."
   },
   "orders": {
     "title": "Orders",
@@ -411,7 +415,8 @@
       "failed": "The order has changed. Only unpaid orders can receive an invoice."
     },
     "catalogError": "Could not load the product catalog.",
-    "retryCatalog": "Retry"
+    "retryCatalog": "Retry",
+    "untrackedInventory": "Not tracked"
   },
   "customers": {
     "title": "Customers",
@@ -864,5 +869,47 @@
     "page": "Page {page, number} of {pages, number} · {count, number} rows",
     "previous": "Previous",
     "next": "Next"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Manage physical stock, reservations and availability for each product or variant.",
+    "tracking": "Track inventory",
+    "physical": "Physical stock",
+    "reserved": "Reserved",
+    "available": "Available",
+    "threshold": "Low-stock threshold",
+    "status": "Inventory status",
+    "untracked": "Not tracked",
+    "in": "In stock",
+    "low": "Low stock",
+    "out": "Out of stock",
+    "inactive": "Inactive variant",
+    "adjust": "Adjust stock",
+    "adjustHint": "Physical stock includes reserved units. Adjustments do not cancel or change order reservations. Disable tracking only after resolving reservations.",
+    "invalid": "Enter whole, non-negative quantities. Physical stock cannot be below reserved stock.",
+    "saveError": "Could not save. Stock may have changed, or browser storage is unavailable. Your edits are preserved; refresh stock before retrying.",
+    "saved": "Inventory updated",
+    "confirm": "Change physical stock from {before} to {after} units and save this threshold?",
+    "confirmAction": "Confirm adjustment",
+    "review": "Review adjustment",
+    "cancel": "Cancel",
+    "exception": "Inventory needs resolution",
+    "exceptionHint": "Payment remains confirmed. Fulfillment is blocked. Check stock and browser storage, adjust stock if appropriate, then retry reservation. Missing or inactive items must be restored before retrying.",
+    "required": "Required: {quantity}; available at last check: {available}",
+    "resolve": "Retry reservation",
+    "trackedCount": "Tracked items",
+    "lowCount": "Low-stock items",
+    "outCount": "Out-of-stock items",
+    "metricsHint": "Each simple product and each active variant counts as one item. Untracked and inactive variants are excluded from totals and alerts.",
+    "demo": "Browser-local demo. Products, stock and reservation receipts persist on this browser only. No cross-device synchronization or concurrent-client guarantee.",
+    "search": "Search product name or SKU",
+    "all": "All",
+    "alerts": "Needs attention",
+    "sort": "Sort by",
+    "loadError": "Inventory could not be loaded. Check browser storage and retry.",
+    "noResults": "No inventory matches these filters.",
+    "empty": "No inventory items yet.",
+    "alert": "{count, plural, one {# inventory item needs attention — review stock} other {# inventory items need attention — review stock}}",
+    "storageException": "Payment remains confirmed, but inventory could not be saved or verified in browser storage. Fulfillment is blocked. Restore storage access and retry reservation."
   }
 }

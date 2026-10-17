@@ -1,5 +1,6 @@
 import type { Product } from "../types";
 import { orderProducts } from "../data/order-products";
+import { inventoryRepository } from "@/features/inventory/repository";
 
 export const productQueryKey = ["products", "demo"] as const;
 
@@ -65,19 +66,13 @@ seedProducts.unshift({
   ],
 });
 
-// Browser-session demo repository. Replace this boundary with the real API when available.
-// Refreshing the browser resets data; no remote or durable persistence is implied.
-let products = [...orderProducts, ...seedProducts];
+// Browser-local demo repository. Replace this boundary with the real API when available.
+inventoryRepository.seed([...orderProducts, ...seedProducts]);
 export const productService = {
   async list(): Promise<Product[]> {
-    return structuredClone(products);
+    return inventoryRepository.list();
   },
   async save(product: Product): Promise<Product> {
-    products = products.some((existing) => existing.id === product.id)
-      ? products.map((existing) =>
-          existing.id === product.id ? structuredClone(product) : existing,
-        )
-      : [structuredClone(product), ...products];
-    return structuredClone(product);
+    return inventoryRepository.save(product);
   },
 };
