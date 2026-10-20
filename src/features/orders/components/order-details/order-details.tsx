@@ -1,4 +1,5 @@
 "use client";
+import { CancelOrderAction } from "../cancel-order-action/cancel-order-action";
 import { InventoryException } from "../inventory-exception/inventory-exception";
 
 import { statusPresentation } from "../../status-presentation";
@@ -92,6 +93,21 @@ export function OrderDetails({
             </div>
             <div className="flex min-h-0 flex-col gap-6 overflow-y-auto px-5 py-5 sm:px-6">
               <OrderProgress status={order.status} />
+              {order.cancellationReason && (
+                <section className="bg-destructive/5 space-y-2 rounded-xl p-4 text-sm">
+                  <p>{t(`cancellation.reasons.${order.cancellationReason.code}`)}</p>
+                  <p className="break-words whitespace-pre-wrap">{order.cancellationReason.note}</p>
+                  {order.cancelledAt && (
+                    <time dateTime={order.cancelledAt}>
+                      {f.dateTime(new Date(order.cancelledAt), {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                        timeZone: "Asia/Tehran",
+                      })}
+                    </time>
+                  )}
+                </section>
+              )}
               <InventoryException order={order} />
               <section className="bg-muted/25 space-y-3 rounded-2xl p-4">
                 <p className="text-sm font-medium">
@@ -232,7 +248,8 @@ export function OrderDetails({
               </div>
             </div>
             <div className="border-border/50 bg-muted/15 flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-5 py-4 sm:px-6">
-              {onPrintLabel && (
+              <CancelOrderAction order={order} />
+              {onPrintLabel && order.status !== "cancelled" && (
                 <Button variant="outline" onClick={() => onPrintLabel(order.id)}>
                   {shipping("individualPrint")}
                 </Button>

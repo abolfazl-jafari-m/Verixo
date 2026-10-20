@@ -14,7 +14,7 @@ import {
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import styles from "./orders-scrollbar.module.css";
-import { isOrderStatus, orderStatuses, type Order, type OrderStatus } from "../../types";
+import { isOrderStatus, fulfillmentStatuses, type Order, type OrderStatus } from "../../types";
 import { OrderCard } from "../order-card/order-card";
 import { columnKeyboardCoordinates } from "./keyboard-coordinates";
 import { canMoveOrder } from "../../mock-workflow";
@@ -101,7 +101,7 @@ export function OrdersBoard({
         aria-label={t("board")}
         tabIndex={0}
       >
-        {orderStatuses.map((status) => {
+        {fulfillmentStatuses.map((status) => {
           const group = orders.filter((order) => order.status === status);
           return (
             <OrdersKanbanColumn

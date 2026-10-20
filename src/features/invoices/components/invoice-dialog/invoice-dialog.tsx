@@ -34,7 +34,7 @@ export function InvoiceDialog({
   const [feedback, setFeedback] = useState<"saved" | "sentSuccess" | "sendFailed" | null>(null);
   const order = orders.find((item) => item.id === orderId);
   const invoice = order ? invoiceFromOrder(order) : null;
-  const locked = invoice?.payment === "paid";
+  const locked = invoice?.payment === "paid" || order?.status === "cancelled";
   return (
     <Dialog
       open
@@ -72,7 +72,7 @@ export function InvoiceDialog({
               {locked && (
                 <p className="bg-muted/40 text-muted-foreground flex items-start gap-2 rounded-xl p-3 text-xs leading-6">
                   <LockKeyhole className="mt-1 size-4 shrink-0" />
-                  {t("locked")}
+                  {t(order?.status === "cancelled" ? "cancelledLocked" : "locked")}
                 </p>
               )}
               {editing && !locked ? (

@@ -74,7 +74,53 @@ export function inventoryTransaction(
   order: Order,
   event: "reserve" | "complete" | "cancel",
 ) {
-  if (event !== "cancel" && order.payment !== "paid")
+  if (event === "cancel") {
+    const previous = repository.receipts[order.id];
+    if (previous?.state === "released")
+      return { repository: structuredClone(repository), order: previous.order };
+    if (order.status === "courier" || order.status === "delivered")
+      throw new Error("Orders handed to a carrier require a return workflow");
+    if (order.inventory?.state === "committed" || previous?.state === "committed")
+      throw new Error("Committed inventory requires a return workflow");
+    if (order.inventory?.state === "reserved" && previous?.state !== "reserved")
+      throw new Error("Missing reservation receipt");
+    const next = structuredClone(repository);
+    if (previous?.state === "reserved") {
+      const rows = new Map(inventoryRows(next.products).map((row) => [row.key, row]));
+      const quantities = new Map<string, number>();
+      for (const entry of previous.entries) {
+        if (!wholeQuantity(entry.quantity) || !entry.quantity)
+          throw new Error("Invalid reservation quantity");
+        const key = inventoryKey(entry.productId, entry.variantId);
+        quantities.set(key, (quantities.get(key) ?? 0) + entry.quantity);
+      }
+      for (const [key, quantity] of quantities) {
+        const row = rows.get(key);
+        if (!row || !inventoryValues(row.item).tracked)
+          throw new Error("Missing or disabled reserved inventory");
+        validateInventory(row.item);
+        // Validate all owners before releasing this order's portion.
+        const total = Object.values(repository.receipts)
+          .filter((receipt) => receipt.state === "reserved")
+          .flatMap((receipt) => receipt.entries)
+          .filter((entry) => inventoryKey(entry.productId, entry.variantId) === key)
+          .reduce((sum, entry) => sum + entry.quantity, 0);
+        if (!wholeQuantity(total) || (row.item.reservedQuantity ?? 0) !== total)
+          throw new Error("Inconsistent reservation totals");
+        row.item.reservedQuantity = total - quantity;
+        validateInventory(row.item);
+      }
+    }
+    const result: Order = { ...order, inventory: { state: "released", issues: [] } };
+    next.receipts[order.id] = {
+      state: "released",
+      entries: previous?.entries ?? [],
+      order: result,
+    };
+    return { repository: next, order: result };
+  }
+  if (order.status === "cancelled") throw new Error("Cancelled orders cannot reserve inventory");
+  if (order.payment !== "paid")
     throw new Error("Payment must be confirmed before reserving inventory");
   if (order.inventory?.state === "committed") return { repository, order };
   const next = structuredClone(repository);
@@ -111,19 +157,18 @@ export function inventoryTransaction(
     });
   }
   const issues: InventoryRequirement[] = [];
-  if (event !== "cancel")
-    for (const entry of entries) {
-      const row = byKey.get(inventoryKey(entry.productId, entry.variantId));
-      if (row) validateInventory(row.item);
-      const available = row ? inventoryValues(row.item).available : 0;
-      if (
-        !row ||
-        (previous?.state !== "reserved" &&
-          (!row.active || row.product.status !== "active" || available < entry.quantity)) ||
-        (previous?.state === "reserved" && (row.item.reservedQuantity ?? 0) < entry.quantity)
-      )
-        issues.push({ ...entry, available });
-    }
+  for (const entry of entries) {
+    const row = byKey.get(inventoryKey(entry.productId, entry.variantId));
+    if (row) validateInventory(row.item);
+    const available = row ? inventoryValues(row.item).available : 0;
+    if (
+      !row ||
+      (previous?.state !== "reserved" &&
+        (!row.active || row.product.status !== "active" || available < entry.quantity)) ||
+      (previous?.state === "reserved" && (row.item.reservedQuantity ?? 0) < entry.quantity)
+    )
+      issues.push({ ...entry, available });
+  }
   if (issues.length) {
     // Never discard an existing reservation on an invalid completion.
     if (previous?.state === "reserved")
@@ -138,20 +183,16 @@ export function inventoryTransaction(
   for (const entry of entries) {
     const row = byKey.get(inventoryKey(entry.productId, entry.variantId));
     if (!row) {
-      if (event === "cancel") continue;
       throw new Error("Missing inventory item");
     }
-    if (event === "cancel") {
-      if (previous?.state === "reserved")
-        row.item.reservedQuantity = (row.item.reservedQuantity ?? 0) - entry.quantity;
-    } else if (event === "complete") {
+    if (event === "complete") {
       row.item.stock -= entry.quantity;
       if (previous?.state === "reserved")
         row.item.reservedQuantity = (row.item.reservedQuantity ?? 0) - entry.quantity;
     } else row.item.reservedQuantity = (row.item.reservedQuantity ?? 0) + entry.quantity;
     validateInventory(row.item);
   }
-  const state = event === "cancel" ? "released" : event === "complete" ? "committed" : "reserved";
+  const state = event === "complete" ? "committed" : "reserved";
   const result: Order = { ...order, inventory: { state, issues: [] } };
   next.receipts[order.id] = { state, entries, order: result };
   return { repository: next, order: result };

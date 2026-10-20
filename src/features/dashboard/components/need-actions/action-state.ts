@@ -20,7 +20,13 @@ export const actionPresentation = {
 } as const;
 export type ActionState = keyof typeof actionPresentation;
 export function getActionState(order: Order): ActionState | null {
-  if (order.archivedAt || order.status === "courier" || order.status === "delivered") return null;
+  if (
+    order.status === "cancelled" ||
+    order.archivedAt ||
+    order.status === "courier" ||
+    order.status === "delivered"
+  )
+    return null;
   if (order.payment === "pending") return order.invoiceStatus === "not_sent" ? "sendInvoice" : null;
   if (order.customerInformationStatus === "pending") return "customerInformation";
   if (order.status === "paid") return "packProducts";

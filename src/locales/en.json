@@ -299,7 +299,8 @@
       "paid": "Paid · Ready to pack",
       "packaged": "Packaged",
       "courier": "With courier",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
     },
     "payments": {
       "pending": "Pending payment",
@@ -336,7 +337,8 @@
       "paid": "Payment recorded; ready to begin packaging",
       "packaged": "Package is ready for courier pickup",
       "courier": "With the courier, on the way to the customer",
-      "delivered": "Order has been delivered to the customer"
+      "delivered": "Order has been delivered to the customer",
+      "cancelled": "This order is cancelled. Payment and invoice history are preserved."
     },
     "nextActions": {
       "pending_payment": "Mark as paid",
@@ -402,7 +404,8 @@
       "shippingUnknown": "Not selected",
       "awaitingDelivery": "Handoff recorded · awaiting delivery",
       "complete": "Fulfillment complete",
-      "createdAt": "Created {date}"
+      "createdAt": "Created {date}",
+      "cancelled": "Cancelled"
     },
     "invoice": {
       "send": "Send Invoice",
@@ -416,7 +419,33 @@
     },
     "catalogError": "Could not load the product catalog.",
     "retryCatalog": "Retry",
-    "untrackedInventory": "Not tracked"
+    "untrackedInventory": "Not tracked",
+    "cancellation": {
+      "action": "Cancel order",
+      "title": "Cancel order {number}",
+      "description": "This cancels the order and releases its inventory reservation, if any. Physical stock stays unchanged and no refund is processed.",
+      "reason": "Cancellation reason",
+      "choose": "Choose a reason",
+      "custom": "Custom reason (required)",
+      "note": "Additional note (optional)",
+      "dismiss": "Go back",
+      "confirm": "Confirm cancellation",
+      "pending": "Cancelling…",
+      "success": "Order cancelled",
+      "reasons": {
+        "customer_request": "Customer request",
+        "out_of_stock": "Out of stock",
+        "duplicate": "Duplicate order",
+        "other": "Other reason"
+      },
+      "errors": {
+        "reason": "Choose a reason and describe it for Other (maximum 500 characters).",
+        "ineligible": "This order cannot be cancelled. Carrier handoff or deducted stock requires a return workflow.",
+        "inventory": "The inventory reservation is missing or inconsistent. No changes were saved; check inventory records.",
+        "storage": "Cancellation could not be saved. Your input is preserved; please retry."
+      },
+      "list": "Cancelled orders"
+    }
   },
   "customers": {
     "title": "Customers",
@@ -528,7 +557,8 @@
     "alreadySent": "Invoice sent",
     "sentSuccess": "Invoice marked as sent locally. Payment remains pending.",
     "sendFailed": "Could not mark as sent. Check the current order payment status.",
-    "storageUnavailable": "Browser storage is unavailable. Changes remain in this session only."
+    "storageUnavailable": "Browser storage is unavailable. Changes remain in this session only.",
+    "cancelledLocked": "This order is cancelled. Its invoice and payment history are preserved."
   },
   "appStates": {
     "navigation": "Main navigation",
@@ -656,7 +686,8 @@
       "paid": "Paid",
       "packaged": "Packaged",
       "courier": "With courier",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
     },
     "financials": "Costs & data completeness",
     "rules": "Sales: paid orders, excluding recorded cancellations. Net sales = gross − discounts − refunds. COGS = eligible quantity × historical unit acquisition cost. Gross profit = net sales − COGS. Estimated net profit = gross profit − other expenses. Sales exclude shipping.",
@@ -911,5 +942,20 @@
     "empty": "No inventory items yet.",
     "alert": "{count, plural, one {# inventory item needs attention — review stock} other {# inventory items need attention — review stock}}",
     "storageException": "Payment remains confirmed, but inventory could not be saved or verified in browser storage. Fulfillment is blocked. Restore storage access and retry reservation."
+  },
+  "cancelledOrders": {
+    "title": "Cancelled orders",
+    "description": "Review cancellation reasons and order history. Payment records stay unchanged.",
+    "back": "Back to orders",
+    "total": "Total cancelled orders",
+    "historyHint": "Cancellation does not issue a refund. Original order and payment records are preserved.",
+    "order": "Order / customer",
+    "cancelledAt": "Cancelled on",
+    "notRecorded": "Not recorded",
+    "retry": "Try again",
+    "empty": "No cancelled orders",
+    "emptyDescription": "Orders you cancel will appear here, with their reasons and history.",
+    "allReasons": "All reasons",
+    "searchPlaceholder": "Search order, customer, or reason…"
   }
 }

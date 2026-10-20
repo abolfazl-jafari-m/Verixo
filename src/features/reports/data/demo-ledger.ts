@@ -61,7 +61,9 @@ export function demoReportSource(orders: Order[]): ReportSource {
         occurredAt: "2026-10-10T09:00:00+03:30",
       },
     ],
-    cancellations: [],
+    cancellations: orders.flatMap((order) =>
+      order.cancelledAt ? [{ orderId: order.id, cancelledAt: order.cancelledAt }] : [],
+    ),
     completeness: { payments: false, expenses: false, cancellations: false },
   };
 }

@@ -15,6 +15,13 @@ export function customerFormPath(token: string, locale: string) {
 }
 
 export function canMoveOrder(order: Order, status: OrderStatus) {
+  if (order.status === "cancelled" || status === "cancelled") return false;
+  if (
+    (order.status === "courier" || order.status === "delivered") &&
+    status !== "courier" &&
+    status !== "delivered"
+  )
+    return false;
   if (order.inventory?.state === "exception" && status !== "paid" && status !== "pending_payment")
     return false;
   if (status === order.status) return true;

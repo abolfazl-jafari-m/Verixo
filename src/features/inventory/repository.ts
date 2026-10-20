@@ -1,3 +1,8 @@
+import {
+  cancelOrderTransaction,
+  CancellationError,
+  type CancellationReason,
+} from "@/features/orders/cancellation";
 import { z } from "zod";
 import type { Product } from "@/features/products/types";
 import type { Order } from "@/features/orders/types";
@@ -136,12 +141,28 @@ export const inventoryRepository = {
     publish(result.repository);
     return result.order;
   },
+  cancelOrder(order: Order, reason: CancellationReason) {
+    let current: InventoryRepository;
+    try {
+      current = read();
+    } catch {
+      throw new CancellationError("storage");
+    }
+    const result = cancelOrderTransaction(current, order, reason);
+    try {
+      publish(result.repository);
+    } catch {
+      throw new CancellationError("storage");
+    }
+    return result.order;
+  },
   recoverOrders(orders: Order[]) {
     const current = read();
     const recovered = new Map(orders.map((order) => [order.id, order]));
     for (const [id, receipt] of Object.entries(current.receipts)) {
       const existing = recovered.get(id);
-      if (!existing) recovered.set(id, receipt.order);
+      if (receipt.order.status === "cancelled") recovered.set(id, receipt.order);
+      else if (!existing) recovered.set(id, receipt.order);
       else if (existing.inventory?.state !== receipt.state)
         recovered.set(id, {
           ...existing,

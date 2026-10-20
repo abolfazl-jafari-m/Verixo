@@ -1,6 +1,7 @@
 import type { Order } from "./types";
 
-export const activeOrders = (orders: Order[]) => orders.filter((order) => !order.archivedAt);
+export const activeOrders = (orders: Order[]) =>
+  orders.filter((order) => !order.archivedAt && order.status !== "cancelled");
 export const archivedOrders = (orders: Order[]) => orders.filter((order) => !!order.archivedAt);
 export const canArchiveOrder = (order: Order) => order.status === "delivered" && !order.archivedAt;
 

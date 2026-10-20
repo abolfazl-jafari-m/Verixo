@@ -1,12 +1,13 @@
 import type { InvoiceRecord } from "@/features/invoices/types";
 
-export const orderStatuses = [
+export const fulfillmentStatuses = [
   "pending_payment",
   "paid",
   "packaged",
   "courier",
   "delivered",
 ] as const;
+export const orderStatuses = [...fulfillmentStatuses, "cancelled"] as const;
 export type OrderStatus = (typeof orderStatuses)[number];
 export type InvoiceDeliveryStatus = "not_sent" | "sent";
 export type PaymentStatus = "pending" | "paid";
@@ -56,6 +57,11 @@ export interface OrderInventory {
 }
 
 export interface Order {
+  cancelledAt?: string;
+  cancellationReason?: {
+    code: "customer_request" | "out_of_stock" | "duplicate" | "other";
+    note: string;
+  };
   inventory?: OrderInventory;
   archivedAt: string | null;
   id: string;

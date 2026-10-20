@@ -34,6 +34,14 @@ export const statusPresentation = {
     column: "bg-orange-500/5 ring-orange-500/20 dark:bg-orange-500/7",
     accent: "border-t-orange-500/70",
   },
+  cancelled: {
+    headline: "cards.cancelled",
+    label: "statuses.cancelled",
+    badge: "bg-destructive/10 text-destructive",
+    icon: Package,
+    column: "bg-muted/20",
+    accent: "border-t-destructive/70",
+  },
   delivered: {
     headline: "cards.delivered",
     label: "statuses.delivered",

@@ -8,6 +8,13 @@ import { orderStatuses, shippingMethods, type Order } from "../types";
 // Per-order records keep edits to different orders in separate tabs independent.
 export const localOrderPrefix = "verixo:mock-orders:v1:";
 export const storedOrderSchema = z.object({
+  cancelledAt: z.iso.datetime().optional(),
+  cancellationReason: z
+    .object({
+      code: z.enum(["customer_request", "out_of_stock", "duplicate", "other"]),
+      note: z.string().max(500),
+    })
+    .optional(),
   inventory: z
     .object({
       reason: z.literal("storage").optional(),

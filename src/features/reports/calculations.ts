@@ -6,7 +6,10 @@ function summarize(source: ReportSource, range: ReportRange) {
   const created = source.orders.filter((order) => inRange(order.createdAt, range));
   const cancelledIds = new Set(source.cancellations.map((event) => event.orderId));
   // A paid flag is a sales eligibility rule, never evidence of a dated cash receipt.
-  const valid = created.filter((order) => order.payment === "paid" && !cancelledIds.has(order.id));
+  const valid = created.filter(
+    (order) =>
+      order.payment === "paid" && order.status !== "cancelled" && !cancelledIds.has(order.id),
+  );
   const financials = new Map(
     source.lines.map((line) => [`${line.orderId}:${line.lineIndex}`, line]),
   );

@@ -14,6 +14,7 @@ export function CustomerFormLink({ order }: { order: Order }) {
   const locale = useLocale();
   const [feedback, setFeedback] = useState<"copied" | "copyFailed" | null>(null);
   const [fallbackUrl, setFallbackUrl] = useState("");
+  if (order.status === "cancelled") return null;
   if (order.payment !== "paid" || !order.customerFormToken) {
     return <p className="text-muted-foreground p-2 text-xs leading-5">{t("afterPayment")}</p>;
   }

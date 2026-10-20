@@ -22,7 +22,10 @@ import { readSettingsSection, SettingsUnavailableError } from "@/features/settin
 import { invoiceSettingsSnapshot } from "@/features/settings/model";
 import { changeOrderArchive, type ArchiveResult } from "../../archive";
 
+import { CancellationError, type CancellationReason } from "../../cancellation";
+
 interface OrdersContextValue {
+  cancelOrder: (id: string, reason: CancellationReason) => void;
   resolveInventory: (id: string) => void;
   archiveOrders: (ids: string[], restore?: boolean) => ArchiveResult;
   orders: Order[];
@@ -51,7 +54,12 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       const result = readLocalOrders(currentOrders.current);
       try {
         result.orders = inventoryRepository.recoverOrders(result.orders).map((order) => {
-          if (order.payment === "paid" && order.status !== "delivered" && !order.inventory)
+          if (
+            order.payment === "paid" &&
+            order.status !== "delivered" &&
+            order.status !== "cancelled" &&
+            !order.inventory
+          )
             return inventoryRepository.applyOrder(order, "reserve");
           return order;
         });
@@ -59,7 +67,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       } catch {
         result.available = false;
         result.orders = result.orders.map((order) =>
-          order.payment === "paid" && order.status !== "delivered"
+          order.payment === "paid" && order.status !== "delivered" && order.status !== "cancelled"
             ? { ...order, inventory: { state: "exception", reason: "storage", issues: [] } }
             : order,
         );
@@ -90,7 +98,12 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }
   function commit(order: Order, current: Order[]) {
-    if (order.payment === "paid" && order.status !== "delivered" && !order.inventory)
+    if (
+      order.payment === "paid" &&
+      order.status !== "delivered" &&
+      order.status !== "cancelled" &&
+      !order.inventory
+    )
       order = applyInventory(order, "reserve");
     const next = [order, ...current.filter((item) => item.id !== order.id)];
     currentOrders.current = next;
@@ -116,7 +129,8 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     const order = current.find((item) => item.id === id);
     // A receipt may already have recovered a reservation after an order/storage write failed.
     // Publish that recovered state too, so retry clears the visible exception immediately.
-    if (order?.payment === "paid") commit(applyInventory(order, "reserve"), current);
+    if (order?.payment === "paid" && order.status !== "cancelled")
+      commit(applyInventory(order, "reserve"), current);
   }
   function createOrder(values: CreateOrderValues) {
     const shop = readSettingsSection("shop");
@@ -145,6 +159,21 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     );
     setCreatedNumber(number);
   }
+  function cancelOrder(id: string, reason: CancellationReason) {
+    const loaded = readLocalOrders(currentOrders.current);
+    if (!ready || !loaded.available) throw new CancellationError("storage");
+    // The inventory snapshot is the commit point and contains the full cancelled order.
+    // A failed secondary order write is recovered from that receipt on refresh.
+    const current = inventoryRepository.recoverOrders(loaded.orders);
+    const order = current.find((item) => item.id === id);
+    if (!order) throw new CancellationError("ineligible");
+    const cancelled = inventoryRepository.cancelOrder(order, reason);
+    const next = current.map((item) => (item.id === id ? cancelled : item));
+    currentOrders.current = next;
+    setOrders(next);
+    setStorageAvailable(writeLocalOrder(cancelled));
+    void queryClient.invalidateQueries({ queryKey: productQueryKey });
+  }
   function archiveOrders(ids: string[], restore = false) {
     const loaded = readLocalOrders(currentOrders.current);
     if (!ready || !loaded.available) {
@@ -171,6 +200,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     const result = invoiceEditSchema.safeParse(values);
     if (
       !order ||
+      order.status === "cancelled" ||
       order.payment === "paid" ||
       !result.success ||
       result.data.unitPrices.length !== order.lines.length
@@ -197,7 +227,12 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     let next = transitionOrder(order, status);
     if (order.status === "delivered" && !order.inventory)
       next.inventory = { state: "committed", issues: [] };
-    if (next.payment === "paid" && !next.inventory && order.status !== "delivered")
+    if (
+      next.payment === "paid" &&
+      !next.inventory &&
+      order.status !== "delivered" &&
+      order.status !== "cancelled"
+    )
       next = applyInventory(next, "reserve");
     if (
       next.inventory?.state === "exception" &&
@@ -207,7 +242,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       commit({ ...next, status: order.status }, current);
       return false;
     }
-    if (status === "delivered" && order.status !== "delivered") {
+    if (status === "delivered" && order.status !== "delivered" && order.status !== "cancelled") {
       next = applyInventory(next, "complete");
       if (next.inventory?.state === "exception") {
         commit({ ...next, status: order.status }, current);
@@ -223,6 +258,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     const result = customerFormSchema.safeParse(values);
     if (
       !order ||
+      order.status === "cancelled" ||
       order.payment !== "paid" ||
       order.customerInformationStatus === "submitted" ||
       !result.success
@@ -248,6 +284,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     <OrdersContext.Provider
       value={{
         orders,
+        cancelOrder,
         resolveInventory,
         archiveOrders,
         ready,

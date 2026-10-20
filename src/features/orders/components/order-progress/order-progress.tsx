@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { orderStatuses, type OrderStatus } from "../../types";
+import { fulfillmentStatuses, type OrderStatus } from "../../types";
 import { statusPresentation } from "../../status-presentation";
 
 export function OrderProgress({ status }: { status: OrderStatus }) {
@@ -21,7 +21,7 @@ export function OrderProgress({ status }: { status: OrderStatus }) {
         </span>
       </div>
       <ol className="grid grid-cols-5 gap-1.5 sm:gap-3">
-        {orderStatuses.map((stage) => {
+        {fulfillmentStatuses.map((stage) => {
           const Icon = statusPresentation[stage].icon;
           return (
             <li

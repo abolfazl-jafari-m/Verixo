@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import {
   Archive,
+  CircleX,
   CheckCheck,
   CheckCircle2,
   Clock3,
@@ -83,19 +84,34 @@ export function OrdersWorkspace() {
     <div className="min-w-0 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">{t("demo")}</p>
-        <Button
-          variant="ghost"
-          className="bg-muted/40 h-10 gap-2 rounded-xl"
-          nativeButton={false}
-          render={<Link href="/orders/archive" />}
-        >
-          <Archive className="size-4" aria-hidden="true" />
-          {archive("title")}
-        </Button>
-        <Button nativeButton={false} render={<Link href="/orders/create" />} className="h-10 gap-2">
-          <Plus className="size-4" />
-          {t("create")}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="ghost"
+            className="bg-muted/40 h-10 gap-2 rounded-xl"
+            nativeButton={false}
+            render={<Link href="/orders/cancelled" />}
+          >
+            <CircleX className="size-4" aria-hidden="true" />
+            {t("cancellation.list")}
+          </Button>
+          <Button
+            variant="ghost"
+            className="bg-muted/40 h-10 gap-2 rounded-xl"
+            nativeButton={false}
+            render={<Link href="/orders/archive" />}
+          >
+            <Archive className="size-4" aria-hidden="true" />
+            {archive("title")}
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href="/orders/create" />}
+            className="h-10 gap-2"
+          >
+            <Plus className="size-4" />
+            {t("create")}
+          </Button>
+        </div>
       </div>
       {!storageAvailable && (
         <p role="alert" className="text-destructive text-sm">
@@ -252,7 +268,7 @@ export function OrdersWorkspace() {
       )}
       {moveError && <ActionFeedback kind="error" message={moveError} />}
       <OrderDetails
-        order={orders.find((order) => order.id === selectedId)}
+        order={allOrders.find((order) => order.id === selectedId)}
         onClose={() => setSelectedId(null)}
         onPrintLabel={(id) => {
           setSelectedId(null);

@@ -1,5 +1,5 @@
 import { createMockInvoice } from "@/features/invoices/utils";
-import { orderStatuses, type Order } from "../types";
+import { fulfillmentStatuses, type Order } from "../types";
 import { paymentForStatus } from "../utils";
 
 const customers = [
@@ -18,7 +18,7 @@ const customers = [
 ];
 // Costs below are the previously recorded demo-ledger snapshots, not current-catalog lookups.
 export const mockOrders: Order[] = customers.map((name, index) => {
-  const status = orderStatuses[index % orderStatuses.length];
+  const status = fulfillmentStatuses[index % fulfillmentStatuses.length];
   return {
     archivedAt: null,
     id: `demo-order-${index}`,

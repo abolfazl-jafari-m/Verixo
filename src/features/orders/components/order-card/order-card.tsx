@@ -35,7 +35,10 @@ export function OrderCard({ order, handle, selection, onOpen, onMove }: OrderCar
   const t = useTranslations("orders");
   const f = useFormatter();
   const locale = useLocale();
-  const nextStatus = orderStatuses[orderStatuses.indexOf(order.status) + 1];
+  const nextStatus =
+    order.status === "delivered" || order.status === "cancelled"
+      ? undefined
+      : orderStatuses[orderStatuses.indexOf(order.status) + 1];
   const presentation = statusPresentation[order.status];
   const pendingPayment = order.status === "pending_payment";
   return (
