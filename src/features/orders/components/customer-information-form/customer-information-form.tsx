@@ -15,7 +15,7 @@ import {
 } from "../../schemas/customer-information-schema";
 import { shippingMethods } from "../../types";
 import { orderTotals } from "../../utils";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 
 const fields = [
   { name: "name", autoComplete: "name", required: true },
@@ -30,7 +30,10 @@ const fields = [
 export function CustomerInformationForm({ token }: { token: string }) {
   const t = useTranslations("orders");
   const f = useFormatter();
-  const { orders, ready, storageAvailable, submitCustomerInformation } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
+  const submitCustomerInformation = useOrdersStore((state) => state.submitCustomerInformation);
   const [submissionFailed, setSubmissionFailed] = useState(false);
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),

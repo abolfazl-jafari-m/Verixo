@@ -13,7 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 import { canArchiveOrder } from "../../archive";
 
 export function ArchiveAction({
@@ -27,7 +27,9 @@ export function ArchiveAction({
 }) {
   const t = useTranslations("orderArchive");
   const locale = useLocale();
-  const { orders, ready, archiveOrders } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
+  const archiveOrders = useOrdersStore((state) => state.archiveOrders);
   const [open, setOpen] = useState(false);
   const busy = useRef(false);
   const selected = [...new Set(ids)];

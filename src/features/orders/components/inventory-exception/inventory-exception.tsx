@@ -3,12 +3,12 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigations";
 import type { Order } from "../../types";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 
 export function InventoryException({ order }: { order: Order }) {
   const t = useTranslations("inventory");
   const f = useFormatter();
-  const { resolveInventory } = useOrders();
+  const resolveInventory = useOrdersStore((state) => state.resolveInventory);
   if (order.inventory?.state !== "exception") return null;
   return (
     <section

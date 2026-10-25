@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useOrders } from "@/features/orders/components/orders-provider/orders-provider";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { invoiceFromOrder } from "../../utils";
 import { InvoiceDocument } from "../invoice-document/invoice-document";
 import { InvoiceEditor } from "../invoice-editor/invoice-editor";
@@ -29,7 +29,9 @@ export function InvoiceDialog({
 }) {
   const t = useTranslations("invoices");
   const locale = useLocale();
-  const { orders, sendInvoice, storageAvailable } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const sendInvoice = useOrdersStore((state) => state.sendInvoice);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const [editing, setEditing] = useState(initialEditing);
   const [feedback, setFeedback] = useState<"saved" | "sentSuccess" | "sendFailed" | null>(null);
   const order = orders.find((item) => item.id === orderId);

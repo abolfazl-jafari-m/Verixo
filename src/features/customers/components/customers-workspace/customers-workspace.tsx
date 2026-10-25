@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOrders } from "@/features/orders/components/orders-provider/orders-provider";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { mockCustomers } from "../../data/mock-customers";
 import { customerOverviews, normalizeCustomerSearch } from "../../utils";
 import { CustomersTable } from "../customers-table/customers-table";
@@ -23,7 +23,8 @@ export function CustomersWorkspace() {
   const t = useTranslations("customers");
   const states = useTranslations("appStates");
   const locale = useLocale();
-  const { orders, ready } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);

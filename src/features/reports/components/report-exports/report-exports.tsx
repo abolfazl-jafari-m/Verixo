@@ -1,14 +1,16 @@
 "use client";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { reportCsv, reportTables } from "../../export-data";
 import { downloadReport, printReport, reportWorkbook } from "../../exports";
-import { useReport } from "../report-provider/report-provider";
+import { useReportData } from "../report-provider/report-provider";
 
 export function ReportExports() {
-  const { report, previous, ready } = useReport();
+  const { report, previous } = useReportData(true);
+  const ready = useOrdersStore((state) => state.ready);
   const locale = useLocale();
   const t = useTranslations("reports");
   const [busy, setBusy] = useState<string | null>(null);

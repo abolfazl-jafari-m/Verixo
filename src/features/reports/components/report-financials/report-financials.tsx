@@ -5,10 +5,10 @@ import { DataTable } from "@/components/shared";
 import { AppState } from "@/components/shared";
 import { formatReportDate } from "../../date-range";
 import { orderDateKey } from "@/features/orders/utils";
-import { useReport } from "../report-provider/report-provider";
+import { useReportData } from "../report-provider/report-provider";
 
 export function ReportFinancials() {
-  const { report } = useReport();
+  const { report } = useReportData();
   const t = useTranslations("reports");
   const locale = useLocale();
   if (!report) return null;

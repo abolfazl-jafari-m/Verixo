@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { cancellationReasons } from "../../cancellation";
 import type { Order } from "../../types";
 import { orderTotals } from "../../utils";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 import { OrderSelect } from "../order-select/order-select";
 import { OrderDetails } from "../order-details/order-details";
 
@@ -20,7 +20,9 @@ export function CancelledOrders() {
   const o = useTranslations("orders");
   const f = useFormatter();
   const locale = useLocale();
-  const { orders, ready, storageAvailable } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const [payment, setPayment] = useState("all");
   const [reason, setReason] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);

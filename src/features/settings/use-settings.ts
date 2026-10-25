@@ -1,36 +1,39 @@
 "use client";
-import { useEffect, useState } from "react";
-import { defaultSettings, type SettingsSection } from "./model";
-import { readSettingsSection, settingsChanged, settingsPrefix } from "./storage";
-
+import { useEffect } from "react";
+import { useStore } from "zustand";
+import { type SettingsSection } from "./model";
+import {
+  getSettingsStore,
+  refreshSettingsSection,
+  settingsPrefix,
+  legacySettingsPrefix,
+  legacySenderKey,
+} from "./store/settings-store";
 export function useSettingsSection<K extends SettingsSection>(section: K) {
-  const [state, setState] = useState({
-    value: defaultSettings[section],
-    available: true,
-    ready: false,
-  });
+  const record = getSettingsStore(section);
+  const value = useStore(record.store, (state) => state.value);
+  const ready = useStore(record.store, (state) => state.ready);
+  const available = useStore(record.store, (state) => state.available);
   useEffect(() => {
-    const refresh = () => setState({ ...readSettingsSection(section), ready: true });
-    const change = (event: Event) => {
-      if ((event as CustomEvent<SettingsSection>).detail === section) refresh();
+    const refresh = () => {
+      refreshSettingsSection(section);
     };
     const storage = (event: StorageEvent) => {
       if (
         !event.key ||
         event.key === settingsPrefix + section ||
-        event.key === "verixo:shipping-label-settings:v1"
+        event.key === legacySettingsPrefix + section ||
+        event.key === legacySenderKey
       )
         refresh();
     };
     refresh();
-    window.addEventListener(settingsChanged, change);
     window.addEventListener("storage", storage);
     window.addEventListener("focus", refresh);
     return () => {
-      window.removeEventListener(settingsChanged, change);
       window.removeEventListener("storage", storage);
       window.removeEventListener("focus", refresh);
     };
   }, [section]);
-  return state;
+  return { value, ready, available };
 }

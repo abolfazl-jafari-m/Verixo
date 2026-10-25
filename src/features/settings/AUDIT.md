@@ -1,5 +1,7 @@
 # Settings audit — 2026-10-13
 
+Current state-management update (2026-10-25): saved sections now use Zustand persist at `verixo:settings:v2:{section}`; drafts use sessionStorage persist at `verixo:settings-draft:v2:{section}`. Validated v1 records migrate on read. The shared legacy sender is removed after both sections are committed. `storage.ts` remains the imperative read/save boundary; `use-settings.ts` subscribes to stores instead of custom events. The historical audit below describes the original implementation.
+
 Scope inspected: locale App Router routes/layouts; dashboard/sidebar; product/variant schemas, forms and session catalog; order provider, workflow, customer form and local persistence; invoice records, rendering and public tokens; shipping label model/forms/PDF/storage; report presets, financial selectors and demo ledger; auth/OTP forms; theme/i18n providers; shared controls, translations, Vitest and feature documentation.
 
 ## Inventory and ownership decisions (before implementation)

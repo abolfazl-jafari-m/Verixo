@@ -25,13 +25,13 @@ The primary workflow is to move an order through invoice, payment, customer-info
 - Next.js App Router, React, and strict TypeScript. The current Next.js dependency is a canary release; exact versions are in `package.json`.
 - Tailwind CSS v4, shadcn/ui, Base UI, and Lucide icons.
 - next-intl for locales and next-themes for themes.
-- TanStack Query for the demo product catalog; React Context and storage adapters for orders/settings.
+- TanStack Query for product queries; feature-owned Zustand stores for orders, inventory, settings, and report filters.
 - React Hook Form and Zod for forms and validation.
 - dnd-kit, TanStack Table, and Recharts for interactive data displays.
 - ExcelJS for XLSX and jsPDF with an embedded Persian font for shipping labels.
 - Storybook, Vitest, Testing Library, and Playwright tooling are installed; this does not imply complete feature coverage or an E2E setup.
 
-Axios and Zustand are installed but are not currently used by the application source. Do not assume there is an API client or Zustand store to extend.
+Axios is installed but no backend API client is implemented. Zustand persistence remains browser-local demo storage.
 
 ## Project structure
 
@@ -78,15 +78,15 @@ npm run build-storybook
 
 `npm run start` requires a production build. Storybook runs on port 6006. `npm run format` rewrites formatting across the repository; prefer targeted formatting for small changes.
 
-There is no `npm test` script. The retained Vitest project named `reports` covers several feature directories. Cancellation business-logic tests are included by explicit request. Run `npx vitest run --project reports`. Starter stories use `npx vitest run --project storybook`, which requires its browser runtime.
+There is no `npm test` script. The retained Vitest project named `reports` covers several feature directories. State, migration, workflow, and hydration tests are included by explicit request. Run `npx vitest run --project reports`. Starter stories use `npx vitest run --project storybook`, which requires its browser runtime.
 
 ## Data ownership and demo boundaries
 
 | Data      | Source and lifetime                                                                                                                                                  |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Products  | `features/products/services/product-service.ts`: browser-local inventory repository shared through the product query key; persists products and reservation receipts |
-| Orders    | `OrdersProvider`: mock seeds merged with validated per-order `localStorage` records                                                                                  |
-| Settings  | `features/settings/storage.ts`: versioned, section-specific browser records; unsaved drafts are separate                                                             |
+| Orders    | `features/orders/store`: scoped Zustand state merges seeds with independently persisted order records                                                                |
+| Settings  | `features/settings/store`: section-scoped Zustand persistence; drafts use separate sessionStorage records                                                            |
 | Customers | Demo contacts plus customer information grouped from orders; no backend customer identity                                                                            |
 | Reports   | Pure calculations over orders and the demo ledger, with explicit completeness flags                                                                                  |
 | Dashboard | Largely independent fixtures rather than live summaries of the order workflow                                                                                        |
@@ -104,9 +104,26 @@ The existing product/variant `stock` field is physical stock. Missing inventory 
 
 Payment confirmation (including creation as paid) reserves all required tracked items together. Duplicate lines are aggregated. Insufficient or missing stock preserves payment, creates an inventory exception and blocks fulfillment; sellers can adjust stock and retry. Delivery commits physical deductions exactly once. Historical delivered orders without inventory metadata are not deducted retroactively. Paid unfinished demo orders are checked on initialization. Existing order snapshots and timestamps remain unchanged.
 
-`features/inventory/domain.ts` owns calculations, reservation, completion, release and adjustment rules. `repository.ts` publishes products and per-order receipts in one versioned localStorage snapshot. Order records remain in their existing per-order store. Receipts recover inventory metadata/payment and missing orders if the later order write fails. Storage failures remain visible; unsaved stock edits stay in the dialog. Active reservations prevent removal, disabling or untracking of affected variants. Archive/restore does not mutate inventory. Cancellation is available before carrier handoff (pending payment, paid, or packaged). A reason and timestamp are recorded; payment, invoice, customer and price/cost snapshots stay intact. Cancelled orders have a dedicated `/orders/cancelled` history page with search, payment/reason filters, pagination, desktop tables and mobile cards and cannot re-enter fulfillment or be archived. The cancellation receipt and reservation release are saved in one inventory snapshot; retries are idempotent and the receipt recovers a failed secondary order write. Missing or inconsistent active reservations block cancellation. Committed inventory cannot be cancelled or automatically restocked; returns/refunds remain future work. Reports exclude cancelled sales and costs while preserving dated cash receipts.
+`features/inventory/domain.ts` owns calculations, reservation, completion, release and adjustment rules. `repository.ts` publishes products and per-order receipts together through Zustand persist. Order records remain in their existing per-order store. Receipts recover inventory metadata/payment and missing orders if the later order write fails. Storage failures remain visible; unsaved stock edits stay in the dialog. Active reservations prevent removal, disabling or untracking of affected variants. Archive/restore does not mutate inventory. Cancellation is available before carrier handoff (pending payment, paid, or packaged). A reason and timestamp are recorded; payment, invoice, customer and price/cost snapshots stay intact. Cancelled orders have a dedicated `/orders/cancelled` history page with search, payment/reason filters, pagination, desktop tables and mobile cards and cannot re-enter fulfillment or be archived. The cancellation receipt and reservation release are saved in one inventory snapshot; retries are idempotent and the receipt recovers a failed secondary order write. Missing or inconsistent active reservations block cancellation. Committed inventory cannot be cancelled or automatically restocked; returns/refunds remain future work. Reports exclude cancelled sales and costs while preserving dated cash receipts.
 
 These are frontend demo protections, not durable storage or cross-tab/client concurrency guarantees. Large image data can exhaust browser storage. The authoritative Laravel implementation must combine stock checks, reservations, completion/release and event deduplication in database transactions. No backend, movement ledger, warehouse, payment verification or synchronization is implemented.
+
+## Client state and persistence
+
+OrdersProvider and ReportProvider supply stable, isolated Zustand store handles rather than React state values. Order consumers select individual fields/actions. Report filters reset with their scoped view; reports remain derived from orders and the demo ledger. Invoices/customer information stay embedded in orders, and customers stay derived. TanStack Query retains product query/mutation caching through productService and its existing query key.
+
+Persisted records use official Zustand persist/createJSONStorage with version 1 envelopes, runtime validation, partialize, and skipHydration. Storage keys are:
+
+- localStorage: `verixo:orders:v2:{id}`, `verixo:inventory:v2`, and `verixo:settings:v2:{shop,invoices,shipping,reports}`.
+- sessionStorage: `verixo:settings-draft:v2:{section}`. Drafts never become saved settings without Save.
+
+Legacy `verixo:mock-orders:v1:{id}`, `verixo:inventory:v1`, settings v1, and draft v1 records migrate on client reads. Valid new records take precedence. Legacy keys are removed only after validated replacements are written; corrupt data is retained. The shared shipping-sender key remains until both destination sections are committed. Failed migration writes preserve the legacy source, expose failure, and can be retried. Reload old app tabs after upgrading; simultaneous old/new versions are not a supported synchronization protocol.
+
+The shared persistence adapter buffers explicit saves until the synchronous browser write succeeds, preserving stock/settings failure behavior. Only domain values persist: readiness, errors, success banners, actions, and calculated reports are excluded. Independent order/section keys preserve unrelated edits; browser storage remains last-write-wins, not a concurrency service.
+
+Orders hydrate in their provider effect; settings hydrate in consuming hooks. Server and first client renders use the same defaults and existing loading states. Focus/storage events trigger middleware rehydration for other-tab changes; same-tab settings consumers subscribe directly to Zustand. Browser inventory state is never mutated during SSR. Dialogs, list filters, selections, drag state, and RHF form state stay local. Theme/locale and scoped sidebar/drawer/carousel primitives retain their existing providers.
+
+State, migration, order/inventory workflow, and React hydration tests were added by explicit request. Run `node node_modules/vitest/vitest.mjs run --project reports`. This is targeted coverage, not complete application E2E coverage.
 
 ## Development principles
 

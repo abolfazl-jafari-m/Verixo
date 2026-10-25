@@ -14,7 +14,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 
 import { useState } from "react";
 import { useFormatter } from "next-intl";
-import { useOrders } from "@/features/orders/components/orders-provider/orders-provider";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { OrderDetails } from "@/features/orders/components/order-details/order-details";
 import { orderTotals } from "@/features/orders/utils";
 import { actionPresentation, getActionState } from "./action-state";
@@ -25,7 +25,11 @@ export function NeedActions() {
   const t = useTranslations("dashboard.actions");
   const f = useFormatter();
   const invoiceMessages = useTranslations("invoices");
-  const { orders, ready, storageAvailable, moveOrder, sendInvoice } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
+  const moveOrder = useOrdersStore((state) => state.moveOrder);
+  const sendInvoice = useOrdersStore((state) => state.sendInvoice);
   const [selected, setSelected] = useState<ActionRequiredOrder | null>(null);
   const [failed, setFailed] = useState(false);
   const data: ActionRequiredOrder[] = orders.flatMap((order) => {

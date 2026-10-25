@@ -1,4 +1,6 @@
 "use client";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
+import { validRange } from "../../date-range";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CalendarDays } from "lucide-react";
@@ -15,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { formatReportDate, previousRange } from "../../date-range";
 import type { RangePreset } from "../../types";
-import { useReport } from "../report-provider/report-provider";
+import { useReportStore } from "../report-provider/report-provider";
 import { ReportExports } from "../report-exports/report-exports";
 
 export function ReportSelect({
@@ -114,11 +116,16 @@ const presets: RangePreset[] = [
   "custom",
 ];
 export function ReportFilters() {
-  const { range, preset, selectPreset, setRange, compare, setCompare, report, storageAvailable } =
-    useReport();
+  const range = useReportStore((state) => state.range);
+  const preset = useReportStore((state) => state.preset);
+  const selectPreset = useReportStore((state) => state.selectPreset);
+  const setRange = useReportStore((state) => state.setRange);
+  const compare = useReportStore((state) => state.compare);
+  const setCompare = useReportStore((state) => state.setCompare);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const t = useTranslations("reports");
   const locale = useLocale();
-  const previous = report ? previousRange(range) : null;
+  const previous = validRange(range) ? previousRange(range) : null;
   return (
     <section className="space-y-4" aria-label={t("filters")}>
       <div className="bg-muted/40 text-muted-foreground rounded-xl px-4 py-3 text-xs leading-6">

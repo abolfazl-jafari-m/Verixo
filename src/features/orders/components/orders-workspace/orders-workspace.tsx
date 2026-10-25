@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/lib/i18n/navigations";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 import { OrderSelect } from "../order-select/order-select";
 import { OrderDetails } from "../order-details/order-details";
 import { OrdersBoard } from "../orders-board/orders-board";
@@ -39,14 +39,12 @@ export function OrdersWorkspace() {
   const [labelSelection, setLabelSelection] = useState<string[]>([]);
   const [previewIds, setPreviewIds] = useState<string[] | null>(null);
   const f = useFormatter();
-  const {
-    orders: allOrders,
-    ready,
-    moveOrder,
-    createdNumber,
-    dismissSuccess,
-    storageAvailable,
-  } = useOrders();
+  const allOrders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
+  const moveOrder = useOrdersStore((state) => state.moveOrder);
+  const createdNumber = useOrdersStore((state) => state.createdNumber);
+  const dismissSuccess = useOrdersStore((state) => state.dismissSuccess);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const orders = activeOrders(allOrders);
   const [search, setSearch] = useState("");
   const [payment, setPayment] = useState("all");

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useOrders } from "@/features/orders/components/orders-provider/orders-provider";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { orderTotals } from "@/features/orders/utils";
 import { invoiceEditSchema, type InvoiceEditValues } from "../../schemas/invoice-schema";
 import type { Invoice } from "../../types";
@@ -22,7 +22,7 @@ export function InvoiceEditor({
 }) {
   const t = useTranslations("invoices");
   const f = useFormatter();
-  const { updateInvoice } = useOrders();
+  const updateInvoice = useOrdersStore((state) => state.updateInvoice);
   const [failed, setFailed] = useState(false);
   const {
     register,

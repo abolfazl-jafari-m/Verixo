@@ -21,7 +21,7 @@ import {
 } from "../../cancellation";
 import type { Order } from "../../types";
 import { OrderSelect } from "../order-select/order-select";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 
 export function CancelOrderAction({
   order,
@@ -34,7 +34,8 @@ export function CancelOrderAction({
   const ordersText = useTranslations("orders");
   const locale = useLocale();
   const id = useId();
-  const { cancelOrder, ready } = useOrders();
+  const cancelOrder = useOrdersStore((state) => state.cancelOrder);
+  const ready = useOrdersStore((state) => state.ready);
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
   const [note, setNote] = useState("");

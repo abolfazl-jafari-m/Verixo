@@ -1,7 +1,6 @@
 import { InventoryAlert } from "@/features/inventory/components";
 import React from "react";
 import { useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
 import {
   KpiOverview,
   NeedActions,
@@ -11,7 +10,6 @@ import {
   TodayShipments,
   TodaySummary,
 } from "@/features/dashboard/components";
-import { Link } from "@/lib/i18n/navigations";
 
 function DashboardPage() {
   const t = useTranslations("dashboard.page");

@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ChartContainer } from "@/components/ui/chart";
 import { AppState } from "@/components/shared";
 import { formatReportDate } from "../../date-range";
-import { useReport } from "../report-provider/report-provider";
+import { useReportData } from "../report-provider/report-provider";
 import { ReportSelect } from "../report-filters/report-filters";
 
 export function ReportTrends({ orders = false }: { orders?: boolean }) {
-  const { report } = useReport();
+  const { report } = useReportData();
   const t = useTranslations("reports");
   const locale = useLocale();
   const [series, setSeries] = useState("net");

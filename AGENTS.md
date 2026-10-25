@@ -43,7 +43,6 @@ Follow the architecture already established in the repository.
 Responsible for Next.js App Router concerns:
 
 - Routes and route segments.
-- `page.tsx`, `layout.tsx`, `loading.tsx`, and `error.tsx`.
 - Route-level composition and metadata.
 - Locale-aware routing and navigation.
 

@@ -7,11 +7,11 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { ProductPerformance } from "../../types";
 import { AppState } from "@/components/shared";
 import { productKeys } from "../../export-data";
-import { useReport } from "../report-provider/report-provider";
+import { useReportData } from "../report-provider/report-provider";
 import { ReportSelect } from "../report-filters/report-filters";
 
 export function ReportProducts() {
-  const { report } = useReport();
+  const { report } = useReportData();
   const t = useTranslations("reports");
   const locale = useLocale();
   const [sort, setSort] = useState("net");

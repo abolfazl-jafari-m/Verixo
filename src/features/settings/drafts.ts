@@ -1,3 +1,4 @@
+import { createPersistedRecord } from "@/lib/storage/persisted-record";
 import { z } from "zod";
 import { settingsSchemas, type Settings, type SettingsSection } from "./model";
 const short = z.string().max(100);
@@ -19,13 +20,23 @@ const draftSchemas = {
   }),
   reports: settingsSchemas.reports,
 };
+
+export function createSettingsDraftStore<K extends SettingsSection>(section: K) {
+  return createPersistedRecord<Settings[K] | null>({
+    name: "verixo:settings-draft:v2:" + section,
+    initial: null,
+    storage: () => window.sessionStorage,
+    parse: (value) => (value === null ? null : (draftSchemas[section].parse(value) as Settings[K])),
+    legacy(storage) {
+      const key = "verixo:settings-draft:v1:" + section;
+      const raw = storage.getItem(key);
+      return raw === null ? null : { value: JSON.parse(raw), keys: [key] };
+    },
+  });
+}
 export function readSettingsDraft<K extends SettingsSection>(section: K): Settings[K] | null {
   try {
-    const parsed = draftSchemas[section].safeParse(
-      JSON.parse(sessionStorage.getItem(`verixo:settings-draft:v1:${section}`) ?? "null"),
-    );
-    // Section-specific draft schemas preserve structure while allowing unfinished input.
-    return parsed.success ? (parsed.data as Settings[K]) : null;
+    return createSettingsDraftStore(section).read().value;
   } catch {
     return null;
   }
@@ -35,10 +46,8 @@ export function keepSettingsDraft<K extends SettingsSection>(
   value: Settings[K] | null,
 ) {
   try {
-    const key = `verixo:settings-draft:v1:${section}`;
-    if (value) sessionStorage.setItem(key, JSON.stringify(value));
-    else sessionStorage.removeItem(key);
+    createSettingsDraftStore(section).save(value);
   } catch {
-    /* Draft recovery is best effort; explicit saves always report errors. */
+    /* Recovery is best effort; explicit saves report errors. */
   }
 }

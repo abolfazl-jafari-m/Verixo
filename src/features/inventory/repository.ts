@@ -1,3 +1,4 @@
+import { createPersistedRecord } from "@/lib/storage/persisted-record";
 import {
   cancelOrderTransaction,
   CancellationError,
@@ -20,8 +21,8 @@ import {
   type InventoryRepository,
 } from "./domain";
 
-export const inventoryStorageKey = "verixo:inventory:v1";
-let repository: InventoryRepository = { products: [], receipts: {} };
+export const inventoryStorageKey = "verixo:inventory:v2";
+let seed: Product[] = [];
 const quantity = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const fields = {
   stock: quantity,
@@ -83,29 +84,43 @@ const snapshotSchema = z.object({
     }),
   ),
 });
-function read(): InventoryRepository {
-  if (typeof window === "undefined") return repository;
-  const raw = localStorage.getItem(inventoryStorageKey);
-  if (!raw) return repository;
-  const parsed = snapshotSchema.parse(JSON.parse(raw));
+function parseSnapshot(value: unknown): InventoryRepository {
+  const parsed = snapshotSchema.parse(value);
   inventoryRows(parsed.products).forEach((row) => validateInventory(row.item));
   const receipts: InventoryRepository["receipts"] = {};
   for (const [id, receipt] of Object.entries(parsed.receipts)) {
     if (!receipt.order.invoice) throw new Error("Invalid inventory receipt");
     receipts[id] = { ...receipt, order: { ...receipt.order, invoice: receipt.order.invoice } };
   }
-  repository = { products: parsed.products, receipts };
-  return repository;
+  return { products: parsed.products, receipts };
+}
+export function createInventoryStore(products: Product[]) {
+  return createPersistedRecord<InventoryRepository>({
+    name: inventoryStorageKey,
+    initial: { products: structuredClone(products), receipts: {} },
+    parse: parseSnapshot,
+    legacy(storage) {
+      const key = "verixo:inventory:v1";
+      const raw = storage.getItem(key);
+      return raw === null ? null : { value: JSON.parse(raw), keys: [key] };
+    },
+  });
+}
+let browserStore: ReturnType<typeof createInventoryStore> | undefined;
+function getBrowserStore() {
+  if (typeof window === "undefined") throw new Error("Inventory mutations require a browser");
+  return (browserStore ??= createInventoryStore(seed));
+}
+function read(): InventoryRepository {
+  if (typeof window === "undefined") return { products: structuredClone(seed), receipts: {} };
+  return getBrowserStore().read().value;
 }
 function publish(next: InventoryRepository) {
-  // Publish storage before memory. Failed writes leave stock untouched.
-  if (typeof window !== "undefined")
-    localStorage.setItem(inventoryStorageKey, JSON.stringify(next));
-  repository = next;
+  getBrowserStore().save(next);
 }
 export const inventoryRepository = {
   seed(products: Product[]) {
-    if (!repository.products.length) repository.products = structuredClone(products);
+    if (!seed.length) seed = structuredClone(products);
   },
   list() {
     return structuredClone(read().products);

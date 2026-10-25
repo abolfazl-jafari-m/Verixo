@@ -4,14 +4,15 @@ import { AppState, ContentSkeleton } from "@/components/shared";
 import { useTranslations } from "next-intl";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useOrders } from "@/features/orders/components/orders-provider/orders-provider";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { invoiceFromOrder } from "../../utils";
 import { InvoiceDocument } from "../invoice-document/invoice-document";
 import styles from "./public-invoice.module.css";
 
 export function PublicInvoice({ token }: { token: string }) {
   const t = useTranslations("invoices");
-  const { orders, ready } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
   const order = orders.find((item) => item.invoice.publicToken === token);
   return (
     <main className={`${styles.page} bg-muted/20 min-h-dvh px-4 py-6 sm:py-10`}>

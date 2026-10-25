@@ -2,11 +2,11 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { metricComparison } from "../../calculations";
-import { useReport } from "../report-provider/report-provider";
+import { useReportData } from "../report-provider/report-provider";
 
 export const summaryKeys = ["gross", "net", "payments", "profit", "orders", "average"] as const;
 export function ReportSummary() {
-  const { report, previous } = useReport();
+  const { report, previous } = useReportData(true);
   const t = useTranslations("reports");
   const locale = useLocale();
   if (!report) return null;

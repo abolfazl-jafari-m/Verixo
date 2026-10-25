@@ -1,5 +1,7 @@
 # Reports data contract
 
+Current state-management update (2026-10-25): OrdersProvider supplies an isolated Zustand store; ReportProvider scopes a Zustand filter store. Financial reports remain derived, never persisted. State/migration/hydration tests are now included in the reports Vitest project; historical verification notes below may describe previously removed tests.
+
 The `/[locale]/reports` route composes report sections and reuses the global local-order provider. All summaries, tables, charts and exports use `buildReport`. No network or backend is simulated.
 
 Simple products and each sellable variant own nullable `costPrice`, in whole toman. This is purchase price plus allocated direct acquisition costs, including inbound freight. Advertising, overhead, customer delivery and order packaging are excluded. Blank means unknown; explicit zero is valid for free/donated inventory. Variable parents have no cost field. Product editing and order creation share `productService`, the browser-local inventory repository and the React Query key.

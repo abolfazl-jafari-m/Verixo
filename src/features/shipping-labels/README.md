@@ -1,5 +1,7 @@
 # Shipping labels
 
+Current state-management update (2026-10-25): order consumers use Zustand selectors, and saved sender settings resolve section-scoped Zustand persistence. The old sender key migrates into shop/shipping sections and is removed only after both are committed. Label generation remains read-only.
+
 Sender preferences now live in the central Settings shipping tab; `/[locale]/settings/shipping-labels` redirects to `/settings?tab=shipping`. `settings-store.ts` is a read-only adapter over `features/settings`: shared bilingual shop name/logo/contact plus an optional dispatch-contact override. Existing `verixo:shipping-label-settings:v1` values are imported as defaults until their central section is saved. See `../settings/AUDIT.md` for ownership and Laravel integration. No carrier, invoice, payment, or fulfillment writes occur during label generation.
 
 Labels are generated on demand from current OrdersProvider records and current saved sender settings. Recipient validation reuses the customer form's name, phone, city, and address rules. Province and postal code are optional. Delivery notes and financial details are deliberately not copied. Sender phone allows landlines as well as mobile numbers. Logos accept PNG/JPEG up to 1 MB and 4096 pixels per side; no external logo URLs or SVG execution.

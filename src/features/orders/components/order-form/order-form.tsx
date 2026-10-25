@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { productService, productQueryKey } from "@/features/products/services/product-service";
 import { AppState, ContentSkeleton } from "@/components/shared";
 import { orderTotals, createOrderLines } from "../../utils";
-import { useOrders } from "../orders-provider/orders-provider";
+import { useOrdersStore } from "../orders-provider/orders-provider";
 import { OrderPaymentField } from "../order-payment-field/order-payment-field";
 import { ProductPicker } from "./product-picker";
 import { OrderProductRow } from "./order-product-row";
@@ -26,7 +26,7 @@ export function OrderForm() {
   const [settingsError, setSettingsError] = useState(false);
   const f = useFormatter();
   const router = useRouter();
-  const { createOrder } = useOrders();
+  const createOrder = useOrdersStore((state) => state.createOrder);
   const catalog = useQuery({ queryKey: productQueryKey, queryFn: productService.list });
   const products = catalog.data ?? [];
   const form = useForm<OrderFormValues>({

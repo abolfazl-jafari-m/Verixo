@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOrders } from "@/features/orders/components/orders-provider/orders-provider";
+import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { normalizePhone } from "@/features/orders/utils";
 import { invoiceStatuses } from "../../types";
 import { invoiceFromOrder } from "../../utils";
@@ -24,7 +24,8 @@ export function InvoicesWorkspace() {
   const t = useTranslations("invoices");
   const states = useTranslations("appStates");
   const locale = useLocale();
-  const { orders, ready } = useOrders();
+  const orders = useOrdersStore((state) => state.orders);
+  const ready = useOrdersStore((state) => state.ready);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [ascending, setAscending] = useState(false);

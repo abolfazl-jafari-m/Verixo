@@ -2,10 +2,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { DataTable } from "@/components/shared";
-import { useReport } from "../report-provider/report-provider";
+import { useReportData } from "../report-provider/report-provider";
 
 export function ReportOrders() {
-  const { report } = useReport();
+  const { report } = useReportData();
   const t = useTranslations("reports");
   const locale = useLocale();
   if (!report) return null;
