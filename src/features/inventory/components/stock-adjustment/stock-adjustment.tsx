@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback, ActionSpinner } from "@/components/shared";
 import { useRef, useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
@@ -105,11 +106,7 @@ export function StockAdjustment({
             {t("invalid")}
           </p>
         )}
-        {error && (
-          <p role="alert" className="text-destructive text-sm">
-            {t("saveError")}
-          </p>
-        )}
+        {error && <ActionFeedback kind="error" message={t("saveError")} />}
         {confirm && (
           <p role="alert" className="text-sm">
             {t("confirm", { before: f.number(values.stock), after: f.number(Number(stock)) })}
@@ -125,8 +122,10 @@ export function StockAdjustment({
           </Button>
           <Button
             disabled={!valid || busy}
+            aria-busy={busy}
             onClick={() => (confirm ? void save() : setConfirm(true))}
           >
+            {busy && <ActionSpinner />}
             {t(confirm ? "confirmAction" : "review")}
           </Button>
         </DialogFooter>

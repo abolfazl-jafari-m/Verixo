@@ -1,10 +1,11 @@
 "use client";
 
+import { AppState, ContentSkeleton, ActionFeedback, ActionSpinner } from "@/components/shared";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
-import { CheckCircle2, Package } from "lucide-react";
+import { CheckCircle2, Package, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -30,6 +31,7 @@ const fields = [
 export function CustomerInformationForm({ token }: { token: string }) {
   const t = useTranslations("orders");
   const f = useFormatter();
+  const states = useTranslations("appStates");
   const orders = useOrdersStore((state) => state.orders);
   const ready = useOrdersStore((state) => state.ready);
   const storageAvailable = useOrdersStore((state) => state.storageAvailable);
@@ -54,17 +56,27 @@ export function CustomerInformationForm({ token }: { token: string }) {
     formState: { errors, isSubmitting },
   } = form;
   const order = orders.find((item) => item.customerFormToken === token);
-  if (!ready)
+  if (!ready) return <ContentSkeleton variant="form" />;
+  if (!order && !storageAvailable)
     return (
-      <p role="status" className="p-6 text-center">
-        {t("customerFlow.loading")}
-      </p>
+      <AppState
+        kind="error"
+        title={states("readError")}
+        description={states("readErrorHint")}
+        action={
+          <Button variant="outline" onClick={() => window.dispatchEvent(new Event("focus"))}>
+            {states("retry")}
+          </Button>
+        }
+      />
     );
   if (!order || order.payment !== "paid")
     return (
-      <p role="alert" className="bg-card border-border/50 rounded-2xl border p-6 text-sm leading-7">
-        {t("customerFlow.unavailable")}
-      </p>
+      <AppState
+        icon={FileQuestion}
+        title={t("customerFlow.unavailableTitle")}
+        description={t("customerFlow.unavailable")}
+      />
     );
   if (order.customerInformationStatus === "submitted")
     return (
@@ -87,7 +99,7 @@ export function CustomerInformationForm({ token }: { token: string }) {
         </p>
       </section>
     );
-  const totals = orderTotals(order.lines, order.shipping);
+  const totals = orderTotals(order.lines, order.shipping, order.discountPercentage);
   return (
     <div className="space-y-5">
       <section className="bg-card border-border/50 space-y-4 rounded-2xl border p-5 sm:p-6">
@@ -124,6 +136,7 @@ export function CustomerInformationForm({ token }: { token: string }) {
         </p>
       </section>
       <form
+        aria-busy={isSubmitting}
         noValidate
         onSubmit={handleSubmit((values) =>
           setSubmissionFailed(!submitCustomerInformation(token, values)),
@@ -231,16 +244,13 @@ export function CustomerInformationForm({ token }: { token: string }) {
         </fieldset>
         <p className="text-muted-foreground text-xs leading-6">{t("customerFlow.localOnly")}</p>
         {!storageAvailable && (
-          <p role="alert" className="text-destructive text-sm">
-            {t("customerFlow.storageUnavailable")}
-          </p>
+          <ActionFeedback kind="error" message={t("customerFlow.storageUnavailable")} />
         )}
         {submissionFailed && (
-          <p role="alert" className="text-destructive text-sm">
-            {t("customerFlow.submitFailed")}
-          </p>
+          <ActionFeedback kind="error" message={t("customerFlow.submitFailed")} />
         )}
         <Button type="submit" disabled={isSubmitting} className="min-h-12 w-full whitespace-normal">
+          {isSubmitting && <ActionSpinner />}
           {t("customerFlow.submit")}
         </Button>
       </form>

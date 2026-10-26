@@ -1,7 +1,10 @@
 import type { CustomerInformation, OrderLine, PaymentStatus } from "@/features/orders/types";
 
+import type { PaymentInformation } from "./payment-information";
+
 export type InvoiceText = Record<"fa" | "en", string>;
 export interface InvoiceSettings {
+  paymentInformation?: PaymentInformation;
   template: "standard";
   shopName: InvoiceText;
   contact: string;
@@ -12,6 +15,9 @@ export interface InvoiceSettings {
 
 // Stored with its order so edits and payment confirmation remain atomic locally.
 export interface InvoiceRecord {
+  // Optional only for legacy records; new invoices explicitly capture both fields.
+  showPaymentDetails?: boolean;
+  discountPercentage?: number;
   id: string;
   orderId: string;
   number: string;

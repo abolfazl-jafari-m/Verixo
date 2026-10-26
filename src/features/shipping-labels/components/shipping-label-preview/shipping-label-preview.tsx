@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Download, Printer } from "lucide-react";
+import { Download, Printer, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ActionFeedback, ActionSpinner } from "@/components/shared";
+import { AppState, ContentSkeleton, ActionFeedback, ActionSpinner } from "@/components/shared";
 import { Link } from "@/lib/i18n/navigations";
 import type { Order } from "@/features/orders/types";
 import {
@@ -107,7 +107,7 @@ export function ShippingLabelPreview({
         <DialogTitle>{t("preview")}</DialogTitle>
         <DialogDescription>{t("previewHint")}</DialogDescription>
         <div className="min-h-0 space-y-4 overflow-y-auto px-1">
-          {!ready && <p role="status">{t("loading")}</p>}
+          {!ready && <ContentSkeleton variant="document" />}
           {ready && (!senderValid || !available) && (
             <div className="bg-muted rounded-xl p-4 text-sm">
               <p>{t(!available ? "storageError" : "configureSender")}</p>
@@ -134,7 +134,14 @@ export function ShippingLabelPreview({
               </ul>
             </section>
           )}
-          {!labels.length && <p role="status">{t("noValid")}</p>}
+          {ready && !labels.length && (
+            <AppState
+              icon={Package}
+              title={t("noValid")}
+              description={t("previewHint")}
+              className="py-6"
+            />
+          )}
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-2">
               <label htmlFor="label-format" className="text-sm font-medium">

@@ -1,4 +1,5 @@
 import { invoiceRecordSchema } from "@/features/invoices/schemas/invoice-schema";
+import { discountPercentageSchema } from "../schemas/discount-schema";
 import { z } from "zod";
 import { customerInformationSchema } from "../schemas/customer-information-schema";
 import { orderStatuses, shippingMethods } from "../types";
@@ -42,6 +43,7 @@ export const storedOrderSchema = z.object({
   customer: customerInformationSchema.nullable(),
   shippingMethod: z.enum(shippingMethods).nullable(),
   customerFormToken: z.string().nullable(),
+  discountPercentage: discountPercentageSchema.optional(),
   shipping: z.number().nonnegative(),
   lines: z.array(
     z.object({

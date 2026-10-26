@@ -44,7 +44,9 @@ export function OrderDetails({
   const shipping = useTranslations("shippingLabels");
   const f = useFormatter();
   const locale = useLocale();
-  const totals = order ? orderTotals(order.lines, order.shipping) : undefined;
+  const totals = order
+    ? orderTotals(order.lines, order.shipping, order.discountPercentage)
+    : undefined;
   return (
     <Dialog
       open={!!order}
@@ -224,6 +226,16 @@ export function OrderDetails({
                       {f.number(order.shipping)} {t("currency")}
                     </dd>
                   </div>
+                  {totals.discountPercentage > 0 && (
+                    <div className="flex justify-between gap-2">
+                      <dt>
+                        {t("discountPercentage")}: {f.number(totals.discountPercentage)}
+                      </dt>
+                      <dd>
+                        {f.number(-totals.discountAmount)} {t("currency")}
+                      </dd>
+                    </div>
+                  )}
                   <div className="border-border/50 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
                     <dt className="font-semibold">{t("total")}</dt>
                     <dd className="text-primary text-lg font-bold">

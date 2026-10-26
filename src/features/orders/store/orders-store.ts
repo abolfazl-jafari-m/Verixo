@@ -1,3 +1,5 @@
+import { configuredPaymentInformation } from "@/features/invoices/payment-information";
+import { discountPercentageSchema } from "../schemas/discount-schema";
 import { createStore } from "zustand/vanilla";
 
 import { inventoryRepository } from "@/features/inventory/repository";
@@ -39,6 +41,7 @@ export interface OrdersActions {
   moveOrder: (id: string, status: OrderStatus) => boolean;
   createOrder: (order: CreateOrderValues) => void;
   sendInvoice: (id: string) => boolean;
+  addInvoicePaymentDetails: (id: string) => boolean;
   updateInvoice: (id: string, values: InvoiceEditValues) => boolean;
   submitCustomerInformation: (token: string, values: CustomerFormValues) => boolean;
 }
@@ -118,6 +121,7 @@ export function createOrdersStore(invalidateProducts: () => void = () => {}) {
         commit(applyInventory(order, "reserve"), current);
     }
     function createOrder(values: CreateOrderValues) {
+      const discountPercentage = discountPercentageSchema.parse(values.discountPercentage ?? 0);
       const shop = readSettingsSection("shop");
       const invoicePreferences = readSettingsSection("invoices");
       if (!shop.available || !invoicePreferences.available) throw new SettingsUnavailableError();
@@ -127,12 +131,17 @@ export function createOrdersStore(invalidateProducts: () => void = () => {}) {
       commit(
         {
           ...values,
+          discountPercentage,
           ...identity,
           archivedAt: null,
-          invoice: createMockInvoice(
-            identity,
-            invoiceSettingsSnapshot(shop.value, invoicePreferences.value),
-          ),
+          invoice: {
+            ...createMockInvoice(
+              identity,
+              invoiceSettingsSnapshot(shop.value, invoicePreferences.value),
+            ),
+            showPaymentDetails: true,
+            discountPercentage,
+          },
           status: values.payment === "paid" ? "paid" : "pending_payment",
           invoiceStatus: "not_sent",
           customer: null,
@@ -177,6 +186,48 @@ export function createOrdersStore(invalidateProducts: () => void = () => {}) {
       if (order.invoiceStatus !== "sent") commit({ ...order, invoiceStatus: "sent" }, current);
       return true;
     }
+    // Explicit compatibility action only. Never refresh an existing snapshot from Settings.
+    function addInvoicePaymentDetails(id: string) {
+      const loaded = readLocalOrders(get().orders);
+      if (!get().ready || !loaded.available) return false;
+      let current: Order[];
+      try {
+        current = inventoryRepository.recoverOrders(loaded.orders);
+      } catch {
+        return false;
+      }
+      const order = current.find((item) => item.id === id);
+      if (
+        !order ||
+        order.payment !== "pending" ||
+        order.status === "cancelled" ||
+        order.invoice.settingsSnapshot.paymentInformation !== undefined
+      )
+        return false;
+      const preferences = readSettingsSection("invoices");
+      const bank = configuredPaymentInformation(preferences.value.paymentInformation);
+      if (!preferences.available || !bank) return false;
+      const next: Order = {
+        ...order,
+        invoiceStatus: "not_sent",
+        invoice: {
+          ...order.invoice,
+          showPaymentDetails: order.invoice.showPaymentDetails ?? true,
+          settingsSnapshot: {
+            ...order.invoice.settingsSnapshot,
+            paymentInformation: structuredClone(bank),
+          },
+        },
+      };
+      // Do not publish an amendment that failed to persist.
+      if (!writeLocalOrder(next)) {
+        setStorageAvailable(false);
+        return false;
+      }
+      setOrders(current.map((item) => (item.id === id ? next : item)));
+      setStorageAvailable(true);
+      return true;
+    }
     function updateInvoice(id: string, values: InvoiceEditValues) {
       const current = latestOrders();
       const order = current.find((item) => item.id === id);
@@ -197,6 +248,12 @@ export function createOrdersStore(invalidateProducts: () => void = () => {}) {
             unitPrice: result.data.unitPrices[index].value,
           })),
           shipping: result.data.shipping,
+          discountPercentage: result.data.discountPercentage ?? order.discountPercentage ?? 0,
+          invoice: {
+            ...order.invoice,
+            discountPercentage: result.data.discountPercentage ?? order.discountPercentage ?? 0,
+            showPaymentDetails: result.data.showPaymentDetails ?? order.invoice.showPaymentDetails,
+          },
           invoiceStatus: "not_sent", // Changed amounts must be explicitly sent again.
         },
         current,
@@ -275,6 +332,7 @@ export function createOrdersStore(invalidateProducts: () => void = () => {}) {
       createOrder,
       sendInvoice,
       updateInvoice,
+      addInvoicePaymentDetails,
       moveOrder,
       submitCustomerInformation,
       dismissSuccess: () => setCreatedNumber(null),

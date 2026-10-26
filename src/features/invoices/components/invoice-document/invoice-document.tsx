@@ -7,6 +7,7 @@ import Image from "next/image";
 import { orderTotals } from "@/features/orders/utils";
 import type { Invoice } from "../../types";
 import { invoiceDateOptions, invoiceStatusStyles } from "../../utils";
+import { visiblePaymentInformation } from "../../payment-information";
 import styles from "./invoice-document.module.css";
 
 // Shared by seller preview, customer page and browser print. Only the public
@@ -17,7 +18,8 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
   const locale = useLocale();
   const language = locale === "fa" ? "fa" : "en";
   const settings = invoice.settingsSnapshot;
-  const totals = orderTotals(invoice.lines, invoice.shipping);
+  const bank = visiblePaymentInformation(settings.paymentInformation, invoice.showPaymentDetails);
+  const totals = orderTotals(invoice.lines, invoice.shipping, invoice.discountPercentage);
   return (
     <article
       className={`${styles.document} border-border/50 bg-card space-y-6 rounded-2xl border p-4 sm:p-6`}
@@ -134,6 +136,14 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
             <dt>{t("subtotal")}</dt>
             <dd>{f.number(totals.subtotal)}</dd>
           </div>
+          {totals.discountPercentage > 0 && (
+            <div className="flex flex-wrap justify-between gap-3">
+              <dt>
+                {t("discount")} ({f.number(totals.discountPercentage)}%)
+              </dt>
+              <dd>{f.number(-totals.discountAmount)}</dd>
+            </div>
+          )}
           <div className="text-muted-foreground flex justify-between gap-3">
             <dt>{t("shipping")}</dt>
             <dd>{f.number(invoice.shipping)}</dd>
@@ -146,6 +156,37 @@ export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
           </div>
         </dl>
       </div>
+      {bank && (
+        <section
+          className="bg-muted/25 space-y-3 rounded-xl p-4 text-sm break-words print:break-inside-avoid"
+          aria-label={t("paymentInformation")}
+        >
+          <h3 className="font-semibold">{t("paymentInformation")}</h3>
+          <p className="text-muted-foreground text-xs">{t("paymentInstructions")}</p>
+          <dl className="space-y-2">
+            <div>
+              <dt className="text-muted-foreground text-xs">{t("accountHolder")}</dt>
+              <dd>{bank.accountHolder}</dd>
+            </div>
+            {bank.cardNumber && (
+              <div>
+                <dt className="text-muted-foreground text-xs">{t("cardNumber")}</dt>
+                <dd>
+                  <bdi dir="ltr">{bank.cardNumber}</bdi>
+                </dd>
+              </div>
+            )}
+            {bank.accountNumber && (
+              <div>
+                <dt className="text-muted-foreground text-xs">{t("accountNumber")}</dt>
+                <dd>
+                  <bdi dir="ltr">{bank.accountNumber}</bdi>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
+      )}
       <footer className="border-border/50 text-muted-foreground border-t pt-4 text-xs leading-6 whitespace-pre-wrap">
         {settings.footer[language]}
       </footer>

@@ -74,7 +74,7 @@ export function CancelOrderAction({
         <DialogContent
           dir={locale === "fa" ? "rtl" : "ltr"}
           showCloseButton={false}
-          className="max-h-[90dvh] gap-0 overflow-y-auto rounded-3xl p-0 shadow-2xl duration-200 motion-reduce:data-closed:animate-none motion-reduce:data-open:animate-none sm:max-w-md"
+          className="max-h-[90dvh] gap-0 overflow-y-auto rounded-3xl p-0 shadow-2xl duration-200 motion-reduce:animate-none sm:max-w-md"
         >
           <div className="border-border/40 bg-muted/20 space-y-4 border-b p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
@@ -188,7 +188,7 @@ export function CancelOrderAction({
               >
                 {pending ? (
                   <LoaderCircle
-                    className="size-4 animate-spin motion-reduce:data-closed:animate-none motion-reduce:data-open:animate-none"
+                    className="size-4 animate-spin motion-reduce:animate-none"
                     aria-hidden="true"
                   />
                 ) : (

@@ -1,10 +1,11 @@
 "use client";
 
 import { AppState, ContentSkeleton } from "@/components/shared";
+import { Link } from "@/lib/i18n/navigations";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileText, Search } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,6 +26,7 @@ export function InvoicesWorkspace() {
   const states = useTranslations("appStates");
   const locale = useLocale();
   const orders = useOrdersStore((state) => state.orders);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const ready = useOrdersStore((state) => state.ready);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -110,12 +112,25 @@ export function InvoicesWorkspace() {
       <p role="status" className="text-muted-foreground text-xs">
         {ready ? t("count", { count: invoices.length }) : null}
       </p>
-      {!ready ? (
-        <ContentSkeleton />
-      ) : invoices.length === 0 ? (
+      {ready && !storageAvailable && (
         <AppState
-          title={states(orders.length ? "noResults" : "emptyTitle")}
-          description={states(orders.length ? "noResultsDescription" : "emptyDescription")}
+          kind="error"
+          title={states("readError")}
+          description={states("readErrorHint")}
+          action={
+            <Button variant="outline" onClick={() => window.dispatchEvent(new Event("focus"))}>
+              {states("retry")}
+            </Button>
+          }
+        />
+      )}
+      {!ready ? (
+        <ContentSkeleton columns={7} />
+      ) : invoices.length === 0 && !storageAvailable ? null : invoices.length === 0 ? (
+        <AppState
+          icon={FileText}
+          title={orders.length ? states("noResults") : t("emptyTitle")}
+          description={orders.length ? states("noResultsDescription") : t("emptyHint")}
           action={
             orders.length ? (
               <Button
@@ -127,7 +142,11 @@ export function InvoicesWorkspace() {
               >
                 {states("clear")}
               </Button>
-            ) : undefined
+            ) : (
+              <Link href="/orders/create" className={buttonVariants()}>
+                {states("newOrder")}
+              </Link>
+            )
           }
         />
       ) : (

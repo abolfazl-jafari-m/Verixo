@@ -28,7 +28,7 @@
     "login": {
       "eyebrow": "Welcome back",
       "title": "Log in to your account",
-      "description": "Enter your mobile number and we’ll send you a verification code.",
+      "description": "Demo: enter your mobile number to continue. No SMS is sent.",
       "prompt": "Don’t have an account?",
       "action": "Sign up"
     },
@@ -43,12 +43,13 @@
       "back": "Back",
       "eyebrow": "Verify your number",
       "title": "Enter verification code",
-      "description": "We sent a 6-digit code to {phone}.",
+      "description": "Demo code for {phone}. Enter any six digits to continue.",
       "phoneFallback": "your phone",
       "label": "Verification code",
       "submit": "Verify and continue",
       "resendPrompt": "Didn’t receive a code?",
-      "resend": "Resend code"
+      "resend": "Resend code",
+      "demoHint": "Resending is unavailable in this demo; this flow does not perform authentication."
     }
   },
   "dashboard": {
@@ -318,7 +319,8 @@
       "stock": "The combined quantity exceeds available stock.",
       "emptyProducts": "Add at least one product.",
       "postalCode": "Enter a 10-digit postal code or leave it empty.",
-      "shippingMethod": "Choose one shipping method."
+      "shippingMethod": "Choose one shipping method.",
+      "discount": "Enter a percentage from 0 to 100 with up to two decimal places."
     },
     "chooseDate": "Select date",
     "clearDate": "Clear date",
@@ -392,7 +394,8 @@
           "label": "Courier",
           "description": "Request delivery by courier."
         }
-      }
+      },
+      "unavailableTitle": "Order form unavailable"
     },
     "cards": {
       "pending_payment": "Payment confirmation required",
@@ -445,7 +448,12 @@
         "storage": "Cancellation could not be saved. Your input is preserved; please retry."
       },
       "list": "Cancelled orders"
-    }
+    },
+    "discountPercentage": "Discount (%)",
+    "discount": "Discount",
+    "noResultsHint": "Clear your search or filters to see orders.",
+    "noOrdersHint": "Choose products and create your first order to get started.",
+    "manageProducts": "Manage products"
   },
   "customers": {
     "title": "Customers",
@@ -488,7 +496,9 @@
     "previousOrders": "Previous Orders",
     "noOrders": "No orders have been recorded for this customer yet.",
     "noPaidPurchases": "This customer has no paid purchases yet.",
-    "close": "Close"
+    "close": "Close",
+    "emptyTitle": "No customers yet",
+    "emptyHint": "Customers appear here after their order information is submitted."
   },
   "invoices": {
     "title": "Invoices",
@@ -558,7 +568,28 @@
     "sentSuccess": "Invoice marked as sent locally. Payment remains pending.",
     "sendFailed": "Could not mark as sent. Check the current order payment status.",
     "storageUnavailable": "Browser storage is unavailable. Changes remain in this session only.",
-    "cancelledLocked": "This order is cancelled. Its invoice and payment history are preserved."
+    "cancelledLocked": "This order is cancelled. Its invoice and payment history are preserved.",
+    "paymentInformation": "Payment information",
+    "accountHolder": "Account holder name",
+    "cardNumber": "Card number",
+    "accountNumber": "Account number",
+    "paymentInstructions": "Use the bank details below to make your payment.",
+    "copyText": "Copy as Text",
+    "textCopied": "Invoice text copied",
+    "copyTextFailed": "Could not copy invoice text. Check clipboard permission and try again.",
+    "legacyPaymentHint": "This invoice has no bank-details snapshot. You can add valid saved details once and share the updated invoice again.",
+    "legacyPaymentLocked": "This historical invoice has no payment-details snapshot. Its original information is preserved; current Settings apply to new invoices.",
+    "addPaymentDetails": "Add saved payment details",
+    "paymentDetailsAdded": "Payment details saved to this invoice. Share the updated invoice again.",
+    "paymentDetailsFailed": "Could not add payment details. Save valid bank information and check browser storage. Existing snapshots and locked invoices cannot be changed.",
+    "paymentSnapshotDisabled": "Payment details are hidden on this invoice. If it is editable, enable them in the invoice editor.",
+    "discountPercentage": "Discount (%)",
+    "discount": "Discount",
+    "discountError": "Enter a percentage from 0 to 100 with up to two decimal places.",
+    "showPaymentDetails": "Show payment details on this invoice",
+    "emptyTitle": "No invoices yet",
+    "emptyHint": "Create an order to generate its invoice.",
+    "missingTitle": "Invoice unavailable"
   },
   "appStates": {
     "navigation": "Main navigation",
@@ -583,7 +614,9 @@
     "newOrder": "Create order",
     "newProduct": "Create product",
     "newOrderHint": "Select products and quantities",
-    "newProductHint": "Add an item to your catalog"
+    "newProductHint": "Add an item to your catalog",
+    "readError": "Saved records are unavailable",
+    "readErrorHint": "Check browser storage access and try again. The available records may be incomplete."
   },
   "reports": {
     "title": "Sales & revenue reports",
@@ -791,7 +824,10 @@
       "phone": "Enter a valid phone number.",
       "address": "Enter a complete address (5–500 characters).",
       "postalCode": "Enter a 10-digit postal code or leave it empty.",
-      "logo": "Choose a valid PNG or JPEG logo."
+      "logo": "Choose a valid PNG or JPEG logo.",
+      "cardNumber": "Enter a 16-digit card number.",
+      "accountNumber": "Account number must contain only digits.",
+      "paymentIdentifier": "Enter a card number or account number."
     },
     "recipientFields": {
       "name": "recipient name",
@@ -849,7 +885,13 @@
     "leaveHint": "Discard the unsaved changes in this section and leave?",
     "stay": "Keep editing",
     "leave": "Discard and leave",
-    "orderSettingsError": "Shop or invoice settings could not be read. Open Settings and review the saved values before creating this order."
+    "orderSettingsError": "Shop or invoice settings could not be read. Open Settings and review the saved values before creating this order.",
+    "paymentInformation": "Payment information",
+    "accountHolder": "Account holder name",
+    "cardNumber": "Card number (optional)",
+    "accountNumber": "Account number (optional)",
+    "showPaymentInformation": "Show payment details on invoices",
+    "paymentHint": "Valid bank information appears on new invoices by default. Control visibility in each invoice’s editor. Enter an account holder and at least one identifier, or clear all fields to remove the bank information."
   },
   "orderArchive": {
     "title": "Archived orders",
@@ -899,7 +941,10 @@
     "pageSize": "Rows per page",
     "page": "Page {page, number} of {pages, number} · {count, number} rows",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "noRows": "No records in {table}",
+    "noRowsHint": "Records will appear here when available.",
+    "searchHint": "Try another search or clear the current search."
   },
   "inventory": {
     "title": "Inventory",
@@ -941,7 +986,11 @@
     "noResults": "No inventory matches these filters.",
     "empty": "No inventory items yet.",
     "alert": "{count, plural, one {# inventory item needs attention — review stock} other {# inventory items need attention — review stock}}",
-    "storageException": "Payment remains confirmed, but inventory could not be saved or verified in browser storage. Fulfillment is blocked. Restore storage access and retry reservation."
+    "storageException": "Payment remains confirmed, but inventory could not be saved or verified in browser storage. Fulfillment is blocked. Restore storage access and retry reservation.",
+    "loading": "Loading inventory…",
+    "noAlerts": "No inventory alerts. Stock is up to date.",
+    "noResultsHint": "Change your search or clear the filters to see inventory items.",
+    "emptyHint": "Add a product to start managing inventory."
   },
   "cancelledOrders": {
     "title": "Cancelled orders",

@@ -1,9 +1,11 @@
 "use client";
 
+import { AppState } from "@/components/shared";
+import { Link } from "@/lib/i18n/navigations";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Plus, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Product } from "@/features/products/types";
@@ -66,7 +68,22 @@ export function ProductPicker({
             </Button>
           ))}
           {products.length === 0 && (
-            <p className="text-muted-foreground p-3 text-sm">{t("noProducts")}</p>
+            <AppState
+              icon={Search}
+              title={t("noProducts")}
+              className="border-0 px-2 py-5"
+              action={
+                search ? (
+                  <Button variant="ghost" onClick={() => setSearch("")}>
+                    {t("clear")}
+                  </Button>
+                ) : (
+                  <Link href="/products" className={buttonVariants({ variant: "outline" })}>
+                    {t("manageProducts")}
+                  </Link>
+                )
+              }
+            />
           )}
         </div>
       </PopoverContent>

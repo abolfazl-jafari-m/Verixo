@@ -5,3 +5,5 @@ export { ReportTrends } from "./report-trends/report-trends";
 export { ReportProducts } from "./report-products/report-products";
 export { ReportOrders } from "./report-orders/report-orders";
 export { ReportFinancials } from "./report-financials/report-financials";
+
+export { ReportSkeleton } from "./report-skeleton/report-skeleton";

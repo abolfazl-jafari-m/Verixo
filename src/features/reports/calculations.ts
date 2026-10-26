@@ -1,3 +1,4 @@
+import { allocateOrderDiscount } from "@/features/orders/totals";
 import { orderStatuses } from "@/features/orders/types";
 import { daysInRange, inRange, nextMonth, shiftDay, validRange } from "./date-range";
 import type { ProductPerformance, Report, ReportRange, ReportSource } from "./types";
@@ -16,11 +17,12 @@ function summarize(source: ReportSource, range: ReportRange) {
   const products = new Map<string, ProductPerformance>();
   let adjustmentsComplete = true;
   for (const order of valid) {
+    const orderDiscounts = allocateOrderDiscount(order.lines, order.discountPercentage);
     order.lines.forEach((line, index) => {
       const fact = financials.get(`${order.id}:${index}`);
       if (!fact) adjustmentsComplete = false;
       const gross = line.unitPrice * line.quantity;
-      const discounts = fact?.discount ?? 0;
+      const discounts = (fact?.discount ?? 0) + orderDiscounts[index];
       const refunds = fact?.refund ?? 0;
       const net = gross - discounts - refunds;
       const unitCost = line.unitCostSnapshot;

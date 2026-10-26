@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
-import { AppState, ContentSkeleton } from "@/components/shared";
+import { AppState, ActionFeedback } from "@/components/shared";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useStore } from "zustand";
 import {
@@ -13,15 +14,27 @@ import {
 import { useSettingsSection } from "@/features/settings/use-settings";
 import type { Settings } from "@/features/settings/model";
 
+import { ReportSkeleton } from "../report-skeleton/report-skeleton";
+
 const ReportStoreContext = createContext<{
   store: ReturnType<typeof createReportStore>;
   selectReport: ReturnType<typeof createReportSelector>;
 } | null>(null);
 export function ReportProvider({ today, children }: { today: string; children: ReactNode }) {
+  const t = useTranslations("settings");
+  const states = useTranslations("appStates");
   const preferences = useSettingsSection("reports");
-  if (!preferences.ready) return <ContentSkeleton variant="cards" />;
+  if (!preferences.ready) return <ReportSkeleton />;
   return (
     <InitializedReportProvider today={today} preferences={preferences.value}>
+      {!preferences.available && (
+        <div className="space-y-2">
+          <ActionFeedback kind="error" message={t("readError")} />
+          <Button variant="outline" onClick={() => window.dispatchEvent(new Event("focus"))}>
+            {states("retry")}
+          </Button>
+        </div>
+      )}
       {children}
     </InitializedReportProvider>
   );
@@ -58,7 +71,21 @@ export function ReportResults({ children }: { children: ReactNode }) {
   const { report } = useReportData();
   const ready = useOrdersStore((state) => state.ready);
   const t = useTranslations("reports");
-  if (!ready) return <ContentSkeleton variant="cards" />;
+  const states = useTranslations("appStates");
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
+  if (!ready) return <ReportSkeleton />;
   if (!report) return <AppState kind="error" title={t("invalidRange")} />;
-  return children;
+  return (
+    <>
+      {!storageAvailable && (
+        <div className="space-y-2">
+          <ActionFeedback kind="error" message={states("readErrorHint")} />
+          <Button variant="outline" onClick={() => window.dispatchEvent(new Event("focus"))}>
+            {states("retry")}
+          </Button>
+        </div>
+      )}
+      {children}
+    </>
+  );
 }

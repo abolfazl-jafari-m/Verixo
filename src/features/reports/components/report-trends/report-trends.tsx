@@ -1,4 +1,5 @@
 "use client";
+import { ChartNoAxesCombined } from "lucide-react";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
@@ -54,7 +55,11 @@ export function ReportTrends({ orders = false }: { orders?: boolean }) {
           </div>
         )}
         {empty ? (
-          <AppState title={t("noActivity")} description={t("tryRange")} />
+          <AppState
+            icon={ChartNoAxesCombined}
+            title={t("noActivity")}
+            description={t("tryRange")}
+          />
         ) : (
           <div dir="ltr">
             <ChartContainer

@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, Phone } from "lucide-react";
+import { ActionSpinner } from "@/components/shared";
+import { Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,10 +32,7 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
   const t = useTranslations("auth");
   const router = useRouter();
   const schema = z.object({
-    phone: z
-      .string()
-      .trim()
-      .refine(isIranianMobileNumber, t("validation.phone")),
+    phone: z.string().trim().refine(isIranianMobileNumber, t("validation.phone")),
   });
   type FormValues = z.infer<typeof schema>;
   const {
@@ -55,7 +53,12 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t(`${mode}.title`)}</h1>
         <p className="text-muted-foreground text-sm leading-6">{t(`${mode}.description`)}</p>
       </div>
-      <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={isSubmitting}>
+      <form
+        className="mt-8 space-y-5"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        aria-busy={isSubmitting}
+      >
         <div className="flex flex-col gap-2">
           <label htmlFor="phone" className="text-sm font-semibold">
             {t("phone.label")}
@@ -78,13 +81,18 @@ export function PhoneAuthForm({ mode }: PhoneAuthFormProps) {
             />
           </div>
           {errors.phone && (
-            <p id="phone-error" className="text-destructive text-sm" role="alert" aria-live="polite">
+            <p
+              id="phone-error"
+              className="text-destructive text-sm"
+              role="alert"
+              aria-live="polite"
+            >
               {errors.phone.message}
             </p>
           )}
         </div>
         <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={isSubmitting}>
-          {isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+          {isSubmitting && <ActionSpinner />}
           {t("phone.continue")}
         </Button>
       </form>

@@ -115,7 +115,10 @@ export function CancelledOrders() {
       header: o("total"),
       cell: ({ row }) => (
         <span className="font-medium tabular-nums">
-          {f.number(orderTotals(row.original.lines, row.original.shipping).total)}{" "}
+          {f.number(
+            orderTotals(row.original.lines, row.original.shipping, row.original.discountPercentage)
+              .total,
+          )}{" "}
           <span className="text-muted-foreground text-xs">{o("currency")}</span>
         </span>
       ),
@@ -149,7 +152,7 @@ export function CancelledOrders() {
         </p>
       </div>
       {!ready ? (
-        <ContentSkeleton variant="board" />
+        <ContentSkeleton variant="table" />
       ) : !storageAvailable ? (
         <AppState
           kind="error"
@@ -159,7 +162,7 @@ export function CancelledOrders() {
           }
         />
       ) : !cancelled.length ? (
-        <AppState title={t("empty")} description={t("emptyDescription")} />
+        <AppState icon={CircleX} title={t("empty")} description={t("emptyDescription")} />
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
@@ -240,7 +243,10 @@ export function CancelledOrders() {
                   <div className="flex flex-wrap justify-between gap-2">
                     <dt className="text-muted-foreground">{o("total")}</dt>
                     <dd className="font-medium tabular-nums">
-                      {f.number(orderTotals(order.lines, order.shipping).total)} {o("currency")}
+                      {f.number(
+                        orderTotals(order.lines, order.shipping, order.discountPercentage).total,
+                      )}{" "}
+                      {o("currency")}
                     </dd>
                   </div>
                 </dl>

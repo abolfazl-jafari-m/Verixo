@@ -25,6 +25,7 @@ export function invoiceFromOrder(order: Order): Invoice {
   const customer = order.customerInformationStatus === "submitted" ? order.customer : null;
   return {
     ...order.invoice,
+    discountPercentage: order.invoice.discountPercentage ?? order.discountPercentage ?? 0,
     orderNumber: order.number,
     lines: order.lines,
     shipping: order.shipping,

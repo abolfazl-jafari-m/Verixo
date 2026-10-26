@@ -1,9 +1,9 @@
 "use client";
-import { ActionFeedback } from "@/components/shared";
+import { AppState, ActionFeedback } from "@/components/shared";
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { LockKeyhole, Pencil, Send, X } from "lucide-react";
+import { FileQuestion, LockKeyhole, Pencil, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
+import { invoiceShowsPaymentDetails } from "../../payment-information";
 import { invoiceFromOrder } from "../../utils";
 import { InvoiceDocument } from "../invoice-document/invoice-document";
 import { InvoiceEditor } from "../invoice-editor/invoice-editor";
@@ -30,10 +31,13 @@ export function InvoiceDialog({
   const t = useTranslations("invoices");
   const locale = useLocale();
   const orders = useOrdersStore((state) => state.orders);
+  const addInvoicePaymentDetails = useOrdersStore((state) => state.addInvoicePaymentDetails);
   const sendInvoice = useOrdersStore((state) => state.sendInvoice);
   const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const [editing, setEditing] = useState(initialEditing);
-  const [feedback, setFeedback] = useState<"saved" | "sentSuccess" | "sendFailed" | null>(null);
+  const [feedback, setFeedback] = useState<
+    "saved" | "sentSuccess" | "sendFailed" | "paymentDetailsAdded" | "paymentDetailsFailed" | null
+  >(null);
   const order = orders.find((item) => item.id === orderId);
   const invoice = order ? invoiceFromOrder(order) : null;
   const locked = invoice?.payment === "paid" || order?.status === "cancelled";
@@ -68,7 +72,11 @@ export function InvoiceDialog({
         </div>
         <div className="min-h-0 space-y-4 overflow-y-auto p-4 sm:p-5">
           {!invoice ? (
-            <p role="alert">{t("unavailable")}</p>
+            <AppState
+              icon={FileQuestion}
+              title={t("missingTitle")}
+              description={t("unavailable")}
+            />
           ) : (
             <>
               {locked && (
@@ -89,8 +97,35 @@ export function InvoiceDialog({
                 />
               ) : (
                 <>
+                  {invoice.settingsSnapshot.paymentInformation === undefined && (
+                    <div className="bg-muted/30 space-y-3 rounded-xl p-4 text-sm">
+                      <p>{t(locked ? "legacyPaymentLocked" : "legacyPaymentHint")}</p>
+                      {!locked && (
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            setFeedback(
+                              addInvoicePaymentDetails(orderId)
+                                ? "paymentDetailsAdded"
+                                : "paymentDetailsFailed",
+                            )
+                          }
+                        >
+                          {t("addPaymentDetails")}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  {!invoiceShowsPaymentDetails(
+                    invoice.settingsSnapshot.paymentInformation,
+                    invoice.showPaymentDetails,
+                  ) && (
+                    <p className="bg-muted/30 rounded-xl p-4 text-sm">
+                      {t("paymentSnapshotDisabled")}
+                    </p>
+                  )}
                   <InvoiceDocument invoice={invoice} />
-                  <InvoiceShare token={invoice.publicToken} />
+                  <InvoiceShare invoice={invoice} />
                   {!locked && (
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -120,7 +155,11 @@ export function InvoiceDialog({
           )}
           {feedback && (
             <ActionFeedback
-              kind={feedback === "sendFailed" ? "error" : "success"}
+              kind={
+                feedback === "sendFailed" || feedback === "paymentDetailsFailed"
+                  ? "error"
+                  : "success"
+              }
               message={t(feedback)}
             />
           )}

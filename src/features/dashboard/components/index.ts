@@ -6,3 +6,5 @@ export * from "./sales-overview/sales-chart";
 export * from "./order-status-chart/order-status-chart";
 export * from "./daily-focus/daily-focus";
 export * from "./kpi-overview/kpi-overview";
+
+export { DashboardSkeleton } from "./dashboard-skeleton/dashboard-skeleton";

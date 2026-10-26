@@ -1,7 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Package } from "lucide-react";
+import { ChevronRight, Package, CircleCheck } from "lucide-react";
+import { AppState, ActionSpinner } from "@/components/shared";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigations";
 import { productService, productQueryKey } from "@/features/products/services/product-service";
@@ -10,9 +13,42 @@ import { inventorySummary } from "../../domain";
 export function InventoryAlert() {
   const t = useTranslations("inventory");
   const query = useQuery({ queryKey: productQueryKey, queryFn: productService.list });
-  if (!query.data || query.isError) return null;
+  const states = useTranslations("appStates");
+  if (query.isPending)
+    return (
+      <div role="status" aria-busy="true">
+        <span className="sr-only">{t("loading")}</span>
+        <Skeleton aria-hidden="true" className="h-16 rounded-xl" />
+      </div>
+    );
+  if (query.isError)
+    return (
+      <AppState
+        kind="error"
+        className="flex-row flex-wrap justify-start py-4 text-start [&_h2]:text-sm"
+        title={t("loadError")}
+        action={
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={query.isFetching}
+            aria-busy={query.isFetching}
+            onClick={() => query.refetch()}
+          >
+            {query.isFetching && <ActionSpinner />}
+            {states("retry")}
+          </Button>
+        }
+      />
+    );
   const summary = inventorySummary(query.data);
-  if (!summary.low && !summary.out) return null;
+  if (!summary.low && !summary.out)
+    return (
+      <div className="bg-muted/25 border-border/40 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm">
+        <CircleCheck aria-hidden="true" className="text-primary size-5 shrink-0" />
+        <p>{t(query.data.length ? "noAlerts" : "empty")}</p>
+      </div>
+    );
   return (
     <Link
       href="/inventory?status=alerts"

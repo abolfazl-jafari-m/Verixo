@@ -1,6 +1,10 @@
 import { createPersistedRecord } from "@/lib/storage/persisted-record";
 import { z } from "zod";
 import { settingsSchemas, type Settings, type SettingsSection } from "./model";
+import {
+  paymentInformationFields,
+  emptyPaymentInformation,
+} from "@/features/invoices/payment-information";
 const short = z.string().max(100);
 const draftSchemas = {
   shop: settingsSchemas.shop.extend({
@@ -9,7 +13,9 @@ const draftSchemas = {
     address: z.string().max(500),
     postalCode: z.string().max(15),
   }),
-  invoices: settingsSchemas.invoices,
+  invoices: settingsSchemas.invoices.extend({
+    paymentInformation: paymentInformationFields.default(emptyPaymentInformation),
+  }),
   shipping: z.object({
     senderName: short,
     useShopContact: z.boolean(),

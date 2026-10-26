@@ -3,6 +3,12 @@ import { mockInvoiceSettings } from "@/features/invoices/data/mock-invoice-setti
 import type { InvoiceSettings } from "@/features/invoices/types";
 import { emptySender, senderSchema, type SenderSettings } from "@/features/shipping-labels/model";
 
+import {
+  configuredPaymentInformation,
+  emptyPaymentInformation,
+  bankInformationSchema,
+} from "@/features/invoices/payment-information";
+
 const text = z.string().trim().max(1000, "tooLong");
 const localized = z.object({ fa: text, en: text });
 const optionalPhone = z
@@ -28,7 +34,11 @@ export const settingsSchemas = {
     address: optionalAddress,
     postalCode: senderSchema.shape.senderPostalCode,
   }),
-  invoices: z.object({ introduction: localized, footer: localized }),
+  invoices: z.object({
+    introduction: localized,
+    footer: localized,
+    paymentInformation: bankInformationSchema.default(emptyPaymentInformation),
+  }),
   shipping: z
     .object({
       senderName: senderSchema.shape.senderName,
@@ -66,6 +76,7 @@ export const defaultSettings: Settings = {
     postalCode: "",
   },
   invoices: {
+    paymentInformation: { ...emptyPaymentInformation },
     introduction: { ...mockInvoiceSettings.introduction },
     footer: { ...mockInvoiceSettings.footer },
   },
@@ -90,6 +101,7 @@ export function invoiceSettingsSnapshot(
     logo: shop.logo || undefined,
     contact: [shop.phone, shop.address, shop.postalCode].filter(Boolean).join("\n"),
     ...invoices,
+    paymentInformation: configuredPaymentInformation(invoices.paymentInformation),
   });
 }
 export function resolveSender(

@@ -3,7 +3,7 @@
 import { AppState, ContentSkeleton } from "@/components/shared";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X } from "lucide-react";
+import { Users, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +24,7 @@ export function CustomersWorkspace() {
   const states = useTranslations("appStates");
   const locale = useLocale();
   const orders = useOrdersStore((state) => state.orders);
+  const storageAvailable = useOrdersStore((state) => state.storageAvailable);
   const ready = useOrdersStore((state) => state.ready);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -108,16 +109,29 @@ export function CustomersWorkspace() {
         )}
       </div>
       <p className="text-muted-foreground text-xs" role="status">
-        {ready ? t("shown", { count: filtered.length }) : t("loading")}
+        {ready ? t("shown", { count: filtered.length }) : null}
       </p>
+      {ready && !storageAvailable && (
+        <AppState
+          kind="error"
+          title={states("readError")}
+          description={states("readErrorHint")}
+          action={
+            <Button variant="outline" onClick={() => window.dispatchEvent(new Event("focus"))}>
+              {states("retry")}
+            </Button>
+          }
+        />
+      )}
       {!ready ? (
-        <ContentSkeleton />
+        <ContentSkeleton columns={7} />
       ) : filtered.length ? (
         <CustomersTable customers={filtered} onSelect={setSelectedId} />
-      ) : (
+      ) : !storageAvailable ? null : (
         <AppState
-          title={states(customers.length ? "noResults" : "emptyTitle")}
-          description={states(customers.length ? "noResultsDescription" : "emptyDescription")}
+          icon={Users}
+          title={customers.length ? states("noResults") : t("emptyTitle")}
+          description={customers.length ? states("noResultsDescription") : t("emptyHint")}
           action={
             customers.length ? (
               <Button

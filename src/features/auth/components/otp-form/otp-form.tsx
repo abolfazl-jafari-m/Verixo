@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { LoaderCircle } from "lucide-react";
+import { ActionSpinner } from "@/components/shared";
 import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,7 +27,12 @@ export function OtpForm() {
 
   return (
     <>
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form
+        className="mt-8 space-y-6"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        aria-busy={isSubmitting}
+      >
         <div className="flex flex-col gap-3">
           <label className="text-sm font-semibold" htmlFor="otp">
             {t("otp.label")}
@@ -44,6 +49,7 @@ export function OtpForm() {
                   value={field.value}
                   onChange={field.onChange}
                   aria-invalid={Boolean(errors.code)}
+                  aria-describedby={errors.code ? "otp-error" : undefined}
                   containerClassName="justify-center"
                   className="w-full"
                 >
@@ -61,24 +67,29 @@ export function OtpForm() {
             />
           </div>
           {errors.code && (
-            <p className="text-destructive text-center text-sm" role="alert">
+            <p id="otp-error" className="text-destructive text-center text-sm" role="alert">
               {errors.code.message}
             </p>
           )}
         </div>
         <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={isSubmitting}>
-          {isSubmitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
+          {isSubmitting && <ActionSpinner />}
           {t("otp.submit")}
         </Button>
       </form>
       <p className="text-muted-foreground mt-6 text-center text-sm">
         {t("otp.resendPrompt")}{" "}
         <button
+          disabled
+          aria-describedby="otp-demo-hint"
           type="button"
-          className="text-primary font-semibold underline-offset-4 hover:underline"
+          className="text-muted-foreground cursor-not-allowed font-semibold"
         >
           {t("otp.resend")}
         </button>
+      </p>
+      <p id="otp-demo-hint" className="text-muted-foreground mt-2 text-center text-xs leading-6">
+        {t("otp.demoHint")}
       </p>
     </>
   );

@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Link } from "@/lib/i18n/navigations";
 import { invoicePath } from "../../utils";
 
-export function InvoiceShare({ token }: { token: string }) {
+import type { Invoice } from "../../types";
+import { InvoiceCopyText } from "../invoice-copy-text/invoice-copy-text";
+
+export function InvoiceShare({ invoice }: { invoice: Invoice }) {
+  const token = invoice.publicToken;
   const t = useTranslations("invoices");
   const locale = useLocale();
   const [copying, setCopying] = useState(false);
@@ -31,7 +35,8 @@ export function InvoiceShare({ token }: { token: string }) {
   }
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-start gap-2">
+        <InvoiceCopyText invoice={invoice} />
         <Button variant="outline" onClick={copy} disabled={copying} aria-busy={copying}>
           {copying ? <ActionSpinner /> : <Copy className="size-4" />}
           {t("copy")}

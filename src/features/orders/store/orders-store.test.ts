@@ -54,6 +54,45 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("order store and inventory persistence", () => {
+  it("keeps issued bank snapshots through settings changes, invoice edits, payment and reload", async () => {
+    const { store, current, createOrdersStore } = await setup();
+    const { readSettingsSection, saveSettingsSection } =
+      await import("@/features/settings/storage");
+    const bank = {
+      enabled: true,
+      accountHolder: "Original holder",
+      cardNumber: "0012345678901234",
+      accountNumber: "000123",
+    };
+    saveSettingsSection("invoices", {
+      ...readSettingsSection("invoices").value,
+      paymentInformation: bank,
+    });
+    store.getState().createOrder(values);
+    const original = current();
+    expect(original.payment).toBe("pending");
+    expect(original.invoice.settingsSnapshot.paymentInformation).toEqual(bank);
+    saveSettingsSection("invoices", {
+      ...readSettingsSection("invoices").value,
+      paymentInformation: { ...bank, accountHolder: "New holder", enabled: false },
+    });
+    expect(
+      store.getState().updateInvoice(original.id, { shipping: 20, unitPrices: [{ value: 150 }] }),
+    ).toBe(true);
+    expect(store.getState().moveOrder(original.id, "paid")).toBe(true);
+    const reloaded = createOrdersStore();
+    reloaded.getState().refresh();
+    expect(
+      reloaded.getState().orders.find((order) => order.id === original.id)?.invoice.settingsSnapshot
+        .paymentInformation,
+    ).toEqual(bank);
+    store.getState().createOrder(values);
+    expect(current().invoice.settingsSnapshot.paymentInformation).toMatchObject({
+      enabled: true,
+      accountHolder: "New holder",
+    });
+  });
+
   it("creates and edits orders, freezes historical costs and invoice identity, and restores on reload", async () => {
     const { store, current, createOrdersStore, inventoryRepository } = await setup();
     store.getState().createOrder(values);
@@ -217,4 +256,201 @@ describe("order store and inventory persistence", () => {
     expect(store.getState().storageAvailable).toBe(false);
     expect(window.localStorage.getItem("verixo:orders:v2:broken")).toBe("{");
   });
+});
+
+it.each([
+  { cardNumber: "0012345678901234", accountNumber: "" },
+  { cardNumber: "", accountNumber: "000123" },
+  { cardNumber: "0012345678901234", accountNumber: "000123" },
+])("explicitly snapshots legacy payment details and new issuance: %j", async (identifiers) => {
+  const { store, current, createOrdersStore } = await setup();
+  const { readSettingsSection, saveSettingsSection } = await import("@/features/settings/storage");
+  const bank = { enabled: true, accountHolder: "Bank holder", ...identifiers };
+  saveSettingsSection("invoices", {
+    ...readSettingsSection("invoices").value,
+    paymentInformation: bank,
+  });
+  const original = store.getState().orders.find((order) => order.id === "demo-order-0")!;
+  expect(original.invoice.settingsSnapshot.paymentInformation).toBeUndefined();
+  expect(store.getState().sendInvoice(original.id)).toBe(true);
+  expect(store.getState().addInvoicePaymentDetails(original.id)).toBe(true);
+  const amended = store.getState().orders.find((order) => order.id === original.id)!;
+  expect(amended).toEqual({
+    ...original,
+    invoiceStatus: "not_sent",
+    invoice: {
+      ...original.invoice,
+      showPaymentDetails: true,
+      settingsSnapshot: { ...original.invoice.settingsSnapshot, paymentInformation: bank },
+    },
+  });
+  expect(store.getState().addInvoicePaymentDetails(original.id)).toBe(false);
+  store.getState().createOrder(values);
+  expect(current().invoice.settingsSnapshot.paymentInformation).toEqual(bank);
+  saveSettingsSection("invoices", {
+    ...readSettingsSection("invoices").value,
+    paymentInformation: { ...bank, accountHolder: "Changed" },
+  });
+  const reloaded = createOrdersStore();
+  reloaded.getState().refresh();
+  expect(
+    reloaded.getState().orders.find((order) => order.id === original.id)?.invoice.settingsSnapshot
+      .paymentInformation,
+  ).toEqual(bank);
+});
+it("allows missing snapshots but does not amend paid/cancelled legacy invoices or unavailable settings", async () => {
+  const { store, current } = await setup();
+  expect(store.getState().addInvoicePaymentDetails("demo-order-0")).toBe(false);
+  store.getState().createOrder(values);
+  const disabled = current();
+  const { readSettingsSection, saveSettingsSection } = await import("@/features/settings/storage");
+  saveSettingsSection("invoices", {
+    ...readSettingsSection("invoices").value,
+    paymentInformation: {
+      enabled: true,
+      accountHolder: "Holder",
+      cardNumber: "",
+      accountNumber: "000123",
+    },
+  });
+  expect(store.getState().addInvoicePaymentDetails(disabled.id)).toBe(true);
+  expect(store.getState().addInvoicePaymentDetails("demo-order-1")).toBe(false);
+  store.getState().cancelOrder("demo-order-0", { code: "customer_request", note: "" });
+  expect(store.getState().addInvoicePaymentDetails("demo-order-0")).toBe(false);
+  window.localStorage.setItem("verixo:settings:v2:invoices", "invalid");
+  expect(store.getState().addInvoicePaymentDetails("demo-order-5")).toBe(false);
+});
+it("does not publish or persist an amendment when browser storage rejects it", async () => {
+  const { store } = await setup();
+  const { readSettingsSection, saveSettingsSection } = await import("@/features/settings/storage");
+  saveSettingsSection("invoices", {
+    ...readSettingsSection("invoices").value,
+    paymentInformation: {
+      enabled: true,
+      accountHolder: "Holder",
+      cardNumber: "",
+      accountNumber: "000123",
+    },
+  });
+  vi.spyOn(window.localStorage, "setItem").mockImplementation(() => {
+    throw new Error("quota");
+  });
+  expect(store.getState().addInvoicePaymentDetails("demo-order-0")).toBe(false);
+  expect(
+    store.getState().orders.find((order) => order.id === "demo-order-0")?.invoice.settingsSnapshot
+      .paymentInformation,
+  ).toBeUndefined();
+  expect(store.getState().storageAvailable).toBe(false);
+});
+
+it("defaults new visibility to true regardless of the retired global flag and preserves invoice choices", async () => {
+  const { store, current, createOrdersStore } = await setup();
+  const { readSettingsSection, saveSettingsSection } = await import("@/features/settings/storage");
+  const bank = { enabled: false, accountHolder: "Holder", cardNumber: "", accountNumber: "000123" };
+  saveSettingsSection("invoices", {
+    ...readSettingsSection("invoices").value,
+    paymentInformation: bank,
+  });
+  store.getState().createOrder(values);
+  const original = current();
+  expect(original.discountPercentage).toBe(0);
+  expect(original.invoice).toMatchObject({
+    showPaymentDetails: true,
+    discountPercentage: 0,
+    settingsSnapshot: { paymentInformation: { ...bank, enabled: true } },
+  });
+  expect(
+    store.getState().updateInvoice(original.id, {
+      shipping: 20,
+      unitPrices: [{ value: 100 }],
+      discountPercentage: 12.5,
+      showPaymentDetails: false,
+    }),
+  ).toBe(true);
+  expect(current()).toMatchObject({
+    discountPercentage: 12.5,
+    invoice: { discountPercentage: 12.5, showPaymentDetails: false },
+  });
+  expect(current().lines).toEqual(original.lines);
+  // An older edit caller omitting these fields must preserve them.
+  expect(
+    store.getState().updateInvoice(original.id, { shipping: 30, unitPrices: [{ value: 100 }] }),
+  ).toBe(true);
+  const reloaded = createOrdersStore();
+  reloaded.getState().refresh();
+  expect(reloaded.getState().orders.find((order) => order.id === original.id)).toMatchObject({
+    discountPercentage: 12.5,
+    invoice: { discountPercentage: 12.5, showPaymentDetails: false },
+  });
+  saveSettingsSection("invoices", {
+    ...readSettingsSection("invoices").value,
+    paymentInformation: { ...bank, accountHolder: "Changed" },
+  });
+  expect(current().invoice.settingsSnapshot.paymentInformation?.accountHolder).toBe("Holder");
+  expect(store.getState().moveOrder(original.id, "paid")).toBe(true);
+  expect(
+    store.getState().updateInvoice(original.id, {
+      shipping: 0,
+      unitPrices: [{ value: 1 }],
+      discountPercentage: 100,
+      showPaymentDetails: true,
+    }),
+  ).toBe(false);
+  expect(current().invoice.showPaymentDetails).toBe(false);
+});
+it("propagates discounts at issuance and rejects invalid create/edit percentages without changing records", async () => {
+  const { store, current } = await setup();
+  for (const percentage of [-1, 101, Infinity, NaN, 1.001])
+    expect(() =>
+      store.getState().createOrder({ ...values, discountPercentage: percentage }),
+    ).toThrow();
+  store.getState().createOrder({ ...values, discountPercentage: 10 });
+  const order = current();
+  expect(order.invoice.discountPercentage).toBe(10);
+  expect(order.invoice.showPaymentDetails).toBe(true);
+  expect(order.invoice.settingsSnapshot.paymentInformation).toBeUndefined();
+  for (const percentage of [-1, 101, Infinity, NaN])
+    expect(
+      store.getState().updateInvoice(order.id, {
+        shipping: 0,
+        unitPrices: [{ value: 100 }],
+        discountPercentage: percentage,
+      }),
+    ).toBe(false);
+  expect(current()).toEqual(order);
+  store.getState().cancelOrder(order.id, { code: "customer_request", note: "" });
+  expect(
+    store.getState().updateInvoice(order.id, {
+      shipping: 0,
+      unitPrices: [{ value: 100 }],
+      discountPercentage: 50,
+    }),
+  ).toBe(false);
+});
+it("preserves legacy hidden snapshots and absent visibility on load", async () => {
+  const { store, createOrdersStore } = await setup();
+  const original = store.getState().orders.find((order) => order.id === "demo-order-0")!;
+  const { writeOrderRecord } = await import("./order-records");
+  const hidden = {
+    ...original,
+    invoice: {
+      ...original.invoice,
+      settingsSnapshot: {
+        ...original.invoice.settingsSnapshot,
+        paymentInformation: {
+          enabled: false,
+          accountHolder: "Historical",
+          cardNumber: "",
+          accountNumber: "000123",
+        },
+      },
+    },
+  };
+  expect(writeOrderRecord(hidden)).toBe(true);
+  const reloaded = createOrdersStore();
+  reloaded.getState().refresh();
+  const stored = reloaded.getState().orders.find((order) => order.id === original.id)!;
+  expect(stored.invoice).toEqual(hidden.invoice);
+  expect(stored.invoice.showPaymentDetails).toBeUndefined();
+  expect(reloaded.getState().addInvoicePaymentDetails(original.id)).toBe(false);
 });

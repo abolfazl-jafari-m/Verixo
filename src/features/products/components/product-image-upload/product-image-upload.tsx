@@ -1,4 +1,5 @@
 "use client";
+import { ActionSpinner, ActionFeedback } from "@/components/shared";
 import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -81,15 +82,12 @@ export function ProductImageUpload({ onBusyChange }: { onBusyChange: (busy: bool
           }}
         />
         {busy && (
-          <p role="status" className="text-muted-foreground text-sm">
+          <p role="status" className="text-muted-foreground flex items-center gap-2 text-sm">
+            <ActionSpinner />
             {t("readingImages")}
           </p>
         )}
-        {error && (
-          <p role="alert" className="text-destructive text-sm">
-            {t("uploadError")}
-          </p>
-        )}
+        {error && <ActionFeedback kind="error" message={t("uploadError")} />}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {images.fields.map((field, index) => (

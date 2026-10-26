@@ -1,4 +1,5 @@
 "use client";
+import { PackageSearch } from "lucide-react";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -85,7 +86,7 @@ export function ReportProducts() {
             />
           </>
         ) : (
-          <AppState title={t("noProducts")} description={t("tryRange")} />
+          <AppState icon={PackageSearch} title={t("noProducts")} description={t("tryRange")} />
         )}
       </CardContent>
     </Card>

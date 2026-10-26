@@ -140,6 +140,31 @@ export function InvoiceSettingsForm() {
       {(form) => (
         <>
           <p className="bg-muted/30 rounded-xl p-4 text-sm leading-6">{t("snapshotHint")}</p>
+          <fieldset className="bg-muted/30 space-y-4 rounded-xl p-4">
+            <legend className="font-medium">{t("paymentInformation")}</legend>
+            <SettingsField
+              form={form}
+              name="paymentInformation.accountHolder"
+              label={t("accountHolder")}
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <SettingsField
+                form={form}
+                name="paymentInformation.cardNumber"
+                label={t("cardNumber")}
+                dir="ltr"
+                maxLength={40}
+              />
+              <SettingsField
+                form={form}
+                name="paymentInformation.accountNumber"
+                label={t("accountNumber")}
+                dir="ltr"
+                maxLength={100}
+              />
+            </div>
+            <p className="text-muted-foreground text-xs">{t("paymentHint")}</p>
+          </fieldset>
           {(["fa", "en"] as const).map((locale) => (
             <fieldset key={locale} className="space-y-4">
               <legend className="mb-3 font-medium">{t(locale)}</legend>

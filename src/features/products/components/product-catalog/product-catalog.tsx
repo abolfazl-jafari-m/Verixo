@@ -1,11 +1,11 @@
 "use client";
 
-import { AppState, ContentSkeleton } from "@/components/shared";
+import { AppState, ContentSkeleton, ActionSpinner } from "@/components/shared";
 import { toast } from "@/components/ui/toast";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
+import { Plus, PackageSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { productService, productQueryKey } from "../../services/product-service";
 import type { Product } from "../../types";
@@ -54,13 +54,19 @@ export function ProductCatalog({ initialCreate = false }: { initialCreate?: bool
       </div>
       <ProductFilters filters={filters} onChange={changeFilters} />
       {query.isPending ? (
-        <ContentSkeleton />
+        <ContentSkeleton columns={6} />
       ) : query.isError ? (
         <AppState
           kind="error"
           title={t("loadError")}
           action={
-            <Button variant="outline" disabled={query.isFetching} onClick={() => query.refetch()}>
+            <Button
+              variant="outline"
+              disabled={query.isFetching}
+              aria-busy={query.isFetching}
+              onClick={() => query.refetch()}
+            >
+              {query.isFetching && <ActionSpinner />}
               {t("retry")}
             </Button>
           }
@@ -72,6 +78,7 @@ export function ProductCatalog({ initialCreate = false }: { initialCreate?: bool
               <ProductTable products={filtered} onEdit={openEditor} />
             ) : (
               <AppState
+                icon={PackageSearch}
                 title={t(products.length ? "noMatches" : "empty")}
                 description={t(products.length ? "noMatchesHint" : "emptyHint")}
                 action={

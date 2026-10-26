@@ -3,8 +3,10 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
-import { AppState, ContentSkeleton, DataTable } from "@/components/shared";
-import { Button } from "@/components/ui/button";
+import { AppState, ContentSkeleton, DataTable, ActionSpinner } from "@/components/shared";
+import { PackageSearch } from "lucide-react";
+import { Link } from "@/lib/i18n/navigations";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -105,15 +107,6 @@ export function InventoryWorkspace({ initialStatus = "all" }: { initialStatus?: 
     },
     { id: "actions", header: p("actions"), cell: ({ row }) => action(row.original) },
   ];
-  if (query.isPending) return <ContentSkeleton />;
-  if (query.isError)
-    return (
-      <AppState
-        kind="error"
-        title={t("loadError")}
-        action={<Button onClick={() => query.refetch()}>{p("retry")}</Button>}
-      />
-    );
   return (
     <section className="space-y-6" aria-label={t("title")}>
       <p className="text-muted-foreground text-sm">{t("demo")}</p>
@@ -121,7 +114,9 @@ export function InventoryWorkspace({ initialStatus = "all" }: { initialStatus?: 
         {(["tracked", "low", "out"] as const).map((key) => (
           <div key={key} className="bg-card border-border/50 rounded-2xl border p-5">
             <p className="text-muted-foreground text-sm">{t(`${key}Count`)}</p>
-            <p className="mt-2 text-2xl font-semibold">{f.number(summary[key])}</p>
+            <p className="mt-2 text-2xl font-semibold">
+              {query.data ? f.number(summary[key]) : "—"}
+            </p>
           </div>
         ))}
       </div>
@@ -163,7 +158,24 @@ export function InventoryWorkspace({ initialStatus = "all" }: { initialStatus?: 
           ]}
         />
       </div>
-      {rows.length ? (
+      {query.isPending ? (
+        <ContentSkeleton columns={7} />
+      ) : query.isError ? (
+        <AppState
+          kind="error"
+          title={t("loadError")}
+          action={
+            <Button
+              disabled={query.isFetching}
+              aria-busy={query.isFetching}
+              onClick={() => query.refetch()}
+            >
+              {query.isFetching && <ActionSpinner />}
+              {p("retry")}
+            </Button>
+          }
+        />
+      ) : rows.length ? (
         <DataTable
           data={rows}
           columns={columns}
@@ -194,7 +206,30 @@ export function InventoryWorkspace({ initialStatus = "all" }: { initialStatus?: 
           )}
         />
       ) : (
-        <AppState title={t(all.length ? "noResults" : "empty")} />
+        <AppState
+          icon={PackageSearch}
+          title={t(all.length ? "noResults" : "empty")}
+          description={t(all.length ? "noResultsHint" : "emptyHint")}
+          action={
+            all.length ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch("");
+                  setType("all");
+                  setStatus("all");
+                  setSort("name");
+                }}
+              >
+                {p("clearFilters")}
+              </Button>
+            ) : (
+              <Link href="/products/create" className={buttonVariants()}>
+                {p("create")}
+              </Link>
+            )
+          }
+        />
       )}
       {editing && (
         <StockAdjustment

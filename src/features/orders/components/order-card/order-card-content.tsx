@@ -40,7 +40,7 @@ export function OrderCardContent({ order }: { order: Order }) {
   const f = useFormatter();
   const presentation = statusPresentation[order.status];
   const Icon = presentation.icon;
-  const totals = orderTotals(order.lines, order.shipping);
+  const totals = orderTotals(order.lines, order.shipping, order.discountPercentage);
   const customer = order.customerInformationStatus === "submitted" ? order.customer : null;
   const customerName = customer?.name ?? t("customerFlow.awaiting");
   const amount = (

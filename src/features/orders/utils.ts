@@ -13,14 +13,7 @@ export function orderDateKey(createdAt: string) {
   return orderDateFormatter.format(new Date(createdAt));
 }
 
-export function orderTotals(lines: OrderLine[], shipping: number) {
-  const subtotal = lines.reduce((total, line) => total + line.quantity * line.unitPrice, 0);
-  return {
-    subtotal,
-    total: subtotal + shipping,
-    count: lines.reduce((total, line) => total + line.quantity, 0),
-  };
-}
+export { orderTotals } from "./totals";
 
 export function selectedProduct(product: Product | undefined, variantId: string) {
   if (!product || product.status !== "active") return undefined;

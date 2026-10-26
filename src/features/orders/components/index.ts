@@ -2,6 +2,7 @@ export * from "./orders-provider/orders-provider";
 export * from "./archived-orders/archived-orders";
 export * from "./orders-workspace/orders-workspace";
 export * from "./order-form/order-form";
+export * from "./order-discount-field/order-discount-field";
 export * from "./orders-board/orders-board";
 export * from "./orders-kanban-column/orders-kanban-column";
 export * from "./draggable-order/draggable-order";

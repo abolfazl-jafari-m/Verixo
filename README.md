@@ -80,6 +80,8 @@ npm run build-storybook
 
 There is no `npm test` script. The retained Vitest project named `reports` covers several feature directories. State, migration, workflow, and hydration tests are included by explicit request. Run `npx vitest run --project reports`. Starter stories use `npx vitest run --project storybook`, which requires its browser runtime.
 
+For the invoice payment browser regression, run the app on port 3100, then `node src/features/invoices/payment-information.browser.mjs`. It uses isolated browser contexts and checks settings persistence, explicit legacy amendments, per-invoice visibility and percentage-discount editing, bilingual rendering/copying, responsive widths, and browser PDF generation. Set `VERIXO_TEST_URL` for a different local URL and `PLAYWRIGHT_CHANNEL` for an installed browser (defaults to Edge on Windows).
+
 ## Data ownership and demo boundaries
 
 | Data      | Source and lifetime                                                                                                                                                  |
@@ -92,7 +94,7 @@ There is no `npm test` script. The retained Vitest project named `reports` cover
 | Dashboard | Largely independent fixtures rather than live summaries of the order workflow                                                                                        |
 
 - Order lines snapshot selling price and purchase cost on submission. Later catalog edits must not change historical costs.
-- Invoice branding/contact settings are snapshotted on creation; changes apply to future invoices.
+- Invoice branding/contact and optional bank-transfer details are snapshotted on creation; changes apply to future invoices. Bank details in Settings display by default on new invoices; the invoice editor controls visibility for each editable invoice. The old global visibility flag is retained only for interpreting legacy snapshots. Preview, public view, browser print/Save as PDF, and bilingual Copy as Text use the invoice snapshot. Copying includes public invoice fields only; order notes and purchase costs are excluded. Orders support product-only percentage discounts (0–100%, up to two decimal places), rounded half up to whole toman before shipping. Order creation and the existing invoice editor show the amount and payable total immediately. The percentage is persisted on the order and its invoice; paid/cancelled orders remain locked. Legacy invoices without a payment snapshot stay unchanged on read. For unpaid, non-cancelled invoices, the explicit “Add saved payment details” action captures valid saved bank details once and resets invoice delivery to not sent. Paid/cancelled invoices and all existing snapshots (including disabled ones) are preserved.
 - Unknown costs and incomplete expenses are different from zero; incomplete data must not be presented as authoritative profit.
 - Archiving is separate from cancellation or deletion and must preserve financial history.
 - Public invoice/customer-form tokens are local demo identifiers. New links cannot retrieve this browser's records on another device.

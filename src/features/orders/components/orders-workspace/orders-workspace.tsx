@@ -17,7 +17,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/lib/i18n/navigations";
 import { useOrdersStore } from "../orders-provider/orders-provider";
@@ -136,7 +136,7 @@ export function OrdersWorkspace() {
               <metric.icon className="text-primary/70 size-4 shrink-0" />
             </div>
             <p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">
-              {f.number(metric.count)}
+              {ready ? f.number(metric.count) : "—"}
             </p>
           </div>
         ))}
@@ -201,7 +201,30 @@ export function OrdersWorkspace() {
         <p>{t("moveHint")}</p>
       </div>
       {ready && filtered.length === 0 && (
-        <AppState title={orders.length ? t("noResults") : t("noOrders")} />
+        <AppState
+          icon={Package}
+          title={orders.length ? t("noResults") : t("noOrders")}
+          description={t(orders.length ? "noResultsHint" : "noOrdersHint")}
+          action={
+            hasFilters ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch("");
+                  setPayment("all");
+                  setDate("");
+                  setLabelSelection([]);
+                }}
+              >
+                {t("clear")}
+              </Button>
+            ) : (
+              <Link href="/orders/create" className={buttonVariants()}>
+                {t("create")}
+              </Link>
+            )
+          }
+        />
       )}
       {ready && (
         <div className="border-border/40 bg-muted/20 flex flex-wrap items-center gap-3 rounded-2xl border p-3">

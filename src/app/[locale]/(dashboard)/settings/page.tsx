@@ -10,7 +10,7 @@ export default function Page() {
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground text-sm leading-6">{t("description")}</p>
       </header>
-      <Suspense fallback={<ContentSkeleton />}>
+      <Suspense fallback={<ContentSkeleton variant="form" />}>
         <SettingsTabs />
       </Suspense>
     </div>

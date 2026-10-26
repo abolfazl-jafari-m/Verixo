@@ -1,4 +1,5 @@
 "use client";
+import { ActionSpinner, ActionFeedback } from "@/components/shared";
 import { useOrdersStore } from "@/features/orders/components/orders-provider/orders-provider";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -16,7 +17,7 @@ export function ReportExports() {
   const [busy, setBusy] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<"exportFailed" | "exported" | "printHint" | null>(null);
   async function run(format: "csv" | "xlsx" | "pdf") {
-    if (!report) return;
+    if (!report || busy) return;
     setBusy(format);
     setFeedback(null);
     try {
@@ -54,23 +55,28 @@ export function ReportExports() {
         {(["csv", "xlsx", "pdf"] as const).map((format) => (
           <Button
             key={format}
+            aria-busy={busy === format}
             variant="outline"
             size="sm"
             disabled={!ready || !report || busy !== null}
             onClick={() => void run(format)}
           >
-            {format === "pdf" ? <Printer className="size-4" /> : <Download className="size-4" />}
+            {busy === format ? (
+              <ActionSpinner />
+            ) : format === "pdf" ? (
+              <Printer aria-hidden="true" className="size-4" />
+            ) : (
+              <Download aria-hidden="true" className="size-4" />
+            )}
             {busy === format ? t("exporting") : t(`exports.${format}`)}
           </Button>
         ))}
       </div>
       {feedback && (
-        <p
-          role={feedback === "exportFailed" ? "alert" : "status"}
-          className="max-w-sm text-xs leading-5"
-        >
-          {t(feedback)}
-        </p>
+        <ActionFeedback
+          kind={feedback === "exportFailed" ? "error" : "success"}
+          message={t(feedback)}
+        />
       )}
     </div>
   );

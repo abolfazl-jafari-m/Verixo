@@ -1,3 +1,4 @@
+import { AppState } from "@/components/shared";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ArrowUpRight, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -49,9 +50,7 @@ export function CustomerPurchaseHistory({ orders }: { orders: Order[] }) {
           )}
         </ul>
       ) : (
-        <p className="text-muted-foreground bg-muted/25 rounded-xl p-4 text-sm">
-          {t("noPaidPurchases")}
-        </p>
+        <AppState icon={Package} title={t("noPaidPurchases")} className="py-6" />
       )}
     </section>
   );
@@ -73,9 +72,10 @@ export function CustomerOrdersList({
       <h3 id="customer-orders-title" className="text-sm font-semibold">
         {t("previousOrders")}
       </h3>
+      {!orders.length && <AppState icon={Package} title={t("noOrders")} className="py-6" />}
       <ul className="space-y-2">
         {orders.map((order) => {
-          const totals = orderTotals(order.lines, order.shipping);
+          const totals = orderTotals(order.lines, order.shipping, order.discountPercentage);
           const presentation = statusPresentation[order.status];
           const Icon = presentation.icon;
           return (

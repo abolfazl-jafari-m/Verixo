@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CircleAlert, Inbox } from "lucide-react";
+import { CircleAlert, Inbox, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 export function AppState({
   title,
@@ -7,14 +7,16 @@ export function AppState({
   action,
   kind = "empty",
   className,
+  icon,
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
   kind?: "empty" | "error";
   className?: string;
+  icon?: LucideIcon;
 }) {
-  const Icon = kind === "error" ? CircleAlert : Inbox;
+  const Icon = icon ?? (kind === "error" ? CircleAlert : Inbox);
   return (
     <div
       role={kind === "error" ? "alert" : "status"}
@@ -23,10 +25,12 @@ export function AppState({
         className,
       )}
     >
-      <Icon
-        aria-hidden="true"
-        className={cn("size-6", kind === "error" ? "text-destructive" : "text-muted-foreground")}
-      />
+      <span className="bg-muted/60 flex size-12 items-center justify-center rounded-2xl">
+        <Icon
+          aria-hidden="true"
+          className={cn("size-6", kind === "error" ? "text-destructive" : "text-muted-foreground")}
+        />
+      </span>
       <h2 className="text-base font-semibold">{title}</h2>
       {description && (
         <p className="text-muted-foreground max-w-md text-sm leading-6">{description}</p>

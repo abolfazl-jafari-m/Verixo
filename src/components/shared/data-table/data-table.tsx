@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AppState } from "../app-state/app-state";
 import { cn } from "@/lib/utils";
 
 interface DataTableProps<T> {
@@ -87,6 +88,28 @@ export function DataTable<T>({
   const count = table.getFilteredRowModel().rows.length;
   const pages = Math.max(1, table.getPageCount());
 
+  const empty = (
+    <AppState
+      icon={Search}
+      className="border-0 py-8"
+      title={t(globalFilter ? "empty" : "noRows", { table: caption })}
+      description={t(globalFilter ? "searchHint" : "noRowsHint")}
+      action={
+        globalFilter ? (
+          <Button
+            variant="outline"
+            onClick={() => {
+              table.setGlobalFilter("");
+              table.setPageIndex(0);
+            }}
+          >
+            {t("clear")}
+          </Button>
+        ) : undefined
+      }
+    />
+  );
+
   function renderTable(items: Row<T>[]) {
     return (
       <Table className={cn("[&_td]:px-4 [&_td]:py-3 [&_th]:px-4", className)}>
@@ -129,7 +152,7 @@ export function DataTable<T>({
                 colSpan={columns.length}
                 className="text-muted-foreground h-28 text-center"
               >
-                {t("empty")}
+                {empty}
               </TableCell>
             </TableRow>
           )}
@@ -190,7 +213,7 @@ export function DataTable<T>({
           {rows.map((row) => (
             <li key={row.id}>{renderMobile(row.original)}</li>
           ))}
-          {!rows.length && <li className="text-muted-foreground py-6 text-sm">{t("empty")}</li>}
+          {!rows.length && <li className="sm:col-span-2">{empty}</li>}
         </ul>
       )}
       {printAllRows && (

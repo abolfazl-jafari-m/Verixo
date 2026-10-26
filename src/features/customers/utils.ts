@@ -32,7 +32,11 @@ export function customerOverviews(orders: Order[], contacts: Customer[]): Custom
       orders: history,
       totalSpent: history
         .filter((order) => order.payment === "paid")
-        .reduce((total, order) => total + orderTotals(order.lines, order.shipping).total, 0),
+        .reduce(
+          (total, order) =>
+            total + orderTotals(order.lines, order.shipping, order.discountPercentage).total,
+          0,
+        ),
       deliveredCount: history.filter(
         (order) => order.payment === "paid" && order.status === "delivered",
       ).length,

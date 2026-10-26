@@ -1,5 +1,6 @@
 "use client";
 
+import { Archive } from "lucide-react";
 import { useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { AppState, ContentSkeleton } from "@/components/shared";
@@ -92,7 +93,8 @@ export function ArchivedOrders() {
         const order = row.original;
         return (
           <div>
-            {f.number(orderTotals(order.lines, order.shipping).total)} {o("currency")}
+            {f.number(orderTotals(order.lines, order.shipping, order.discountPercentage).total)}{" "}
+            {o("currency")}
           </div>
         );
       },
@@ -215,9 +217,7 @@ export function ArchivedOrders() {
         </Button>
       )}
       {!ready ? (
-        <div role="status" aria-label={t("loading")}>
-          <ContentSkeleton variant="board" />
-        </div>
+        <ContentSkeleton variant="table" columns={6} />
       ) : !storageAvailable ? (
         <AppState
           kind="error"
@@ -229,6 +229,21 @@ export function ArchivedOrders() {
         />
       ) : !filtered.length ? (
         <AppState
+          icon={Archive}
+          action={
+            archived.length ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch("");
+                  setDate("");
+                  setPayment("all");
+                }}
+              >
+                {o("clear")}
+              </Button>
+            ) : undefined
+          }
           title={archived.length ? o("noResults") : t("empty")}
           description={archived.length ? undefined : t("emptyDescription")}
         />

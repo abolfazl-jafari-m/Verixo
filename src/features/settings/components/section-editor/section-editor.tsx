@@ -1,4 +1,5 @@
 "use client";
+import { ActionSpinner } from "@/components/shared";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   useForm,
@@ -32,7 +33,8 @@ import { keepSettingsDraft, readSettingsDraft } from "../../drafts";
 
 const resolvers: { [K in SettingsSection]: Resolver<Settings[K]> } = {
   shop: zodResolver(settingsSchemas.shop),
-  invoices: zodResolver(settingsSchemas.invoices),
+  // Forms receive parsed defaults, including paymentInformation on legacy records.
+  invoices: zodResolver(settingsSchemas.invoices) as Resolver<Settings["invoices"]>,
   shipping: zodResolver(settingsSchemas.shipping),
   reports: zodResolver(settingsSchemas.reports),
 };
@@ -45,11 +47,19 @@ export function SectionEditor<K extends SettingsSection>({
   children: (form: UseFormReturn<Settings[K]>, setBusy: (busy: boolean) => void) => ReactNode;
 }) {
   const state = useSettingsSection(section);
+  const feedback = useTranslations("appStates");
   const t = useTranslations("settings");
-  if (!state.ready) return <ContentSkeleton />;
+  if (!state.ready) return <ContentSkeleton variant="form" />;
   return (
     <div className="space-y-4">
-      {!state.available && <ActionFeedback kind="error" message={t("readError")} />}
+      {!state.available && (
+        <div className="space-y-2">
+          <ActionFeedback kind="error" message={t("readError")} />
+          <Button variant="outline" onClick={() => window.dispatchEvent(new Event("focus"))}>
+            {feedback("retry")}
+          </Button>
+        </div>
+      )}
       <Editor section={section} initial={state.value}>
         {children}
       </Editor>
@@ -148,7 +158,8 @@ function Editor<K extends SettingsSection>({
         </fieldset>
         {error && <ActionFeedback kind="error" message={t("saveError")} />}
         <div className="flex flex-wrap items-center gap-3 border-t pt-4">
-          <Button type="submit" disabled={isSubmitting || busy}>
+          <Button type="submit" disabled={isSubmitting || busy} aria-busy={isSubmitting}>
+            {isSubmitting && <ActionSpinner />}
             {t("save")}
           </Button>
           <Button

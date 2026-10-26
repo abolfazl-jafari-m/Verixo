@@ -106,12 +106,14 @@ export function InvoicesTable({
     {
       id: "total",
       header: t("total"),
-      accessorFn: (r) => orderTotals(r.lines, r.shipping).total,
+      accessorFn: (r) => orderTotals(r.lines, r.shipping, r.discountPercentage).total,
       cell: ({ row }) => {
         const invoice = row.original;
         return (
           <div className="font-medium tabular-nums">
-            {f.number(orderTotals(invoice.lines, invoice.shipping).total)}{" "}
+            {f.number(
+              orderTotals(invoice.lines, invoice.shipping, invoice.discountPercentage).total,
+            )}{" "}
             <span className="text-muted-foreground text-xs">{t("currency")}</span>
           </div>
         );
@@ -184,7 +186,7 @@ export function InvoicesTable({
                 >
                   {t("edit")}
                 </Button>
-                <InvoiceShare token={invoice.publicToken} />
+                <InvoiceShare invoice={invoice} />
               </PopoverContent>
             </Popover>
           </div>

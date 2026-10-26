@@ -1,3 +1,4 @@
+import { discountPercentageSchema } from "./discount-schema";
 import { z } from "zod";
 import type { Product } from "@/features/products/types";
 import { selectedProduct } from "../utils";
@@ -5,6 +6,7 @@ import { selectedProduct } from "../utils";
 export function createOrderFormSchema(products: Product[]) {
   return z
     .object({
+      discountPercentage: discountPercentageSchema,
       notes: z.string().trim().max(1000, "tooLong"),
       payment: z.enum(["pending", "paid"]),
       shipping: z

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { SettingsUnavailableError } from "@/features/settings/storage";
 import { ActionFeedback } from "@/components/shared";
 
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
 import { Package, ReceiptText, ShoppingBag, Truck } from "lucide-react";
@@ -13,9 +13,10 @@ import { useRouter } from "@/lib/i18n/navigations";
 import { createOrderFormSchema, type OrderFormValues } from "../../schemas/order-schema";
 import { useQuery } from "@tanstack/react-query";
 import { productService, productQueryKey } from "@/features/products/services/product-service";
-import { AppState, ContentSkeleton } from "@/components/shared";
+import { AppState, ContentSkeleton, ActionSpinner } from "@/components/shared";
 import { orderTotals, createOrderLines } from "../../utils";
 import { useOrdersStore } from "../orders-provider/orders-provider";
+import { OrderDiscountField } from "../order-discount-field/order-discount-field";
 import { OrderPaymentField } from "../order-payment-field/order-payment-field";
 import { ProductPicker } from "./product-picker";
 import { OrderProductRow } from "./order-product-row";
@@ -36,6 +37,7 @@ export function OrderForm() {
       notes: "",
       payment: "pending",
       shipping: 0,
+      discountPercentage: 0,
       lines: [],
     },
   });
@@ -48,10 +50,14 @@ export function OrderForm() {
   const items = useFieldArray({ control, name: "lines" });
   const payment = useWatch({ control, name: "payment" });
   const lines = useWatch({ control, name: "lines" });
+  const discountPercentage = useWatch({ control, name: "discountPercentage" });
   const shipping = useWatch({ control, name: "shipping" });
   const totals = orderTotals(
     createOrderLines(lines, products),
     Number.isFinite(shipping) && shipping >= 0 ? shipping : 0,
+    Number.isFinite(discountPercentage) && discountPercentage >= 0 && discountPercentage <= 100
+      ? discountPercentage
+      : 0,
   );
   function submit(data: OrderFormValues) {
     setSettingsError(false);
@@ -60,6 +66,7 @@ export function OrderForm() {
         notes: data.notes,
         lines: createOrderLines(data.lines, products),
         shipping: data.shipping,
+        discountPercentage: data.discountPercentage,
         payment: data.payment,
       });
     } catch (error) {
@@ -71,13 +78,22 @@ export function OrderForm() {
     }
     router.push("/orders");
   }
-  if (catalog.isPending) return <ContentSkeleton />;
+  if (catalog.isPending) return <ContentSkeleton variant="form" />;
   if (catalog.isError)
     return (
       <AppState
         kind="error"
         title={t("catalogError")}
-        action={<Button onClick={() => void catalog.refetch()}>{t("retryCatalog")}</Button>}
+        action={
+          <Button
+            disabled={catalog.isFetching}
+            aria-busy={catalog.isFetching}
+            onClick={() => void catalog.refetch()}
+          >
+            {catalog.isFetching && <ActionSpinner />}
+            {t("retryCatalog")}
+          </Button>
+        }
       />
     );
   return (
@@ -170,6 +186,22 @@ export function OrderForm() {
             </div>
           </header>
           <OrderPaymentField />
+          <Controller
+            control={control}
+            name="discountPercentage"
+            render={({ field, fieldState }) => (
+              <OrderDiscountField
+                id="order-discount"
+                value={field.value ?? 0}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                inputRef={field.ref}
+                discountAmount={totals.discountAmount}
+                invalid={!!fieldState.error}
+                disabled={isSubmitting}
+              />
+            )}
+          />
           <div className="bg-muted/30 dark:bg-foreground/5 rounded-xl p-3 text-xs leading-relaxed">
             <p className="mb-1 font-medium">
               {t("initialStatus")}:{" "}
@@ -204,6 +236,14 @@ export function OrderForm() {
                 {f.number(totals.subtotal)} {t("currency")}
               </dd>
             </div>
+            <div className="flex justify-between gap-2">
+              <dt>
+                {t("discountPercentage")}: {f.number(totals.discountPercentage)}
+              </dt>
+              <dd>
+                {f.number(-totals.discountAmount)} {t("currency")}
+              </dd>
+            </div>
             <div className="text-muted-foreground flex items-center justify-between gap-2">
               <dt className="flex items-center gap-1">
                 <Truck className="size-3.5" />
@@ -224,6 +264,7 @@ export function OrderForm() {
           <p className="text-muted-foreground text-xs leading-relaxed">{t("demo")}</p>
           <div className="grid gap-2">
             <Button type="submit" className="h-12 rounded-xl shadow-sm" disabled={isSubmitting}>
+              {isSubmitting && <ActionSpinner />}
               {t(isSubmitting ? "saving" : "save")}
             </Button>
             <Button

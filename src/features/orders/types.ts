@@ -23,7 +23,10 @@ export interface CustomerInformation {
   postalCode: string;
   deliveryNotes: string;
 }
-export type CreateOrderValues = Pick<Order, "lines" | "notes" | "shipping" | "payment">;
+export type CreateOrderValues = Pick<
+  Order,
+  "lines" | "notes" | "shipping" | "payment" | "discountPercentage"
+>;
 
 export interface OrderLineAdjustments {
   discount: number;
@@ -57,6 +60,8 @@ export interface OrderInventory {
 }
 
 export interface Order {
+  // Missing on legacy records means no order-level percentage discount.
+  discountPercentage?: number;
   cancelledAt?: string;
   cancellationReason?: {
     code: "customer_request" | "out_of_stock" | "duplicate" | "other";

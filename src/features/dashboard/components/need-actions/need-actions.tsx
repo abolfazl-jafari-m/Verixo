@@ -2,15 +2,22 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/shared";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CircleCheck } from "lucide-react";
 import {
   NeedActionCard,
   type ActionRequiredOrder,
 } from "@/features/dashboard/components/need-actions/need-action-card/need-action-card";
 import { useTranslations } from "next-intl";
-import { type ColumnDef } from "@tanstack/react-table";
 
 import { useState } from "react";
 import { useFormatter } from "next-intl";
@@ -19,7 +26,7 @@ import { OrderDetails } from "@/features/orders/components/order-details/order-d
 import { orderTotals } from "@/features/orders/utils";
 import { actionPresentation, getActionState } from "./action-state";
 import { Link } from "@/lib/i18n/navigations";
-import { ActionFeedback } from "@/components/shared";
+import { AppState, ContentSkeleton, ActionFeedback } from "@/components/shared";
 
 export function NeedActions() {
   const t = useTranslations("dashboard.actions");
@@ -42,7 +49,10 @@ export function NeedActions() {
             customer: order.customer?.name ?? t("customerPending"),
             state,
             issue: t(actionPresentation[state].description),
-            amount: f.number(orderTotals(order.lines, order.shipping).total) + " " + t("currency"),
+            amount:
+              f.number(orderTotals(order.lines, order.shipping, order.discountPercentage).total) +
+              " " +
+              t("currency"),
             updatedAt: f.dateTime(new Date(order.createdAt), {
               month: "short",
               day: "numeric",
@@ -62,51 +72,6 @@ export function NeedActions() {
       setFailed(!moveOrder(order.id, order.state === "packProducts" ? "packaged" : "courier"));
     } else setSelected(order);
   }
-  const columns: ColumnDef<ActionRequiredOrder>[] = [
-    {
-      accessorKey: "number",
-      header: t("table.order"),
-      cell: ({ row }) => <span className="font-medium tabular-nums">{row.original.number}</span>,
-    },
-    {
-      accessorKey: "customer",
-      header: t("table.customer"),
-      cell: ({ row }) => <span className="font-medium">{row.original.customer}</span>,
-    },
-    {
-      accessorKey: "issue",
-      header: t("table.issue"),
-      cell: ({ row }) => <span className="text-muted-foreground">{row.original.issue}</span>,
-    },
-    {
-      accessorKey: "amount",
-      header: t("table.amount"),
-      cell: ({ row }) => <span className="font-semibold tabular-nums">{row.original.amount}</span>,
-    },
-    {
-      accessorKey: "updatedAt",
-      header: t("table.updatedAt"),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground whitespace-nowrap">{row.original.updatedAt}</span>
-      ),
-    },
-    {
-      id: "action",
-      header: () => <span className="block text-end">{t("table.action")}</span>,
-      cell: ({ row }) => (
-        <div className="text-end">
-          <Button
-            disabled={!ready}
-            onClick={() => act(row.original)}
-            className="h-8 gap-1.5 px-3 text-xs"
-          >
-            {t(row.original.state)}
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <div className={"space-y-4"}>
       <div className={"flex items-center justify-between"}>
@@ -122,18 +87,56 @@ export function NeedActions() {
         </Link>
       </div>
       <p className="text-muted-foreground text-xs">{invoiceMessages("demo")}</p>
-      <DataTable
-        data={data}
-        columns={columns}
-        caption={t("title")}
-        getRowId={(order) => order.id}
-        search={{ getValue: (order) => [order.number, order.customer, order.issue].join(" ") }}
-        renderMobile={(order) => (
-          <NeedActionCard order={order} disabled={!ready} onAction={() => act(order)} />
-        )}
-      />
-      {!ready && <p role="status">{t("loading")}</p>}
-      {ready && !data.length && <p className="text-muted-foreground py-6 text-sm">{t("empty")}</p>}
+      {ready && data.length > 0 && (
+        <>
+          <div className="border-border/50 bg-card hidden min-w-0 overflow-hidden rounded-xl border lg:block">
+            <Table>
+              <TableCaption className="sr-only">{t("title")}</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">{t("table.order")}</TableHead>
+                  <TableHead scope="col">{t("table.customer")}</TableHead>
+                  <TableHead scope="col">{t("table.issue")}</TableHead>
+                  <TableHead scope="col">{t("table.amount")}</TableHead>
+                  <TableHead scope="col">{t("table.updatedAt")}</TableHead>
+                  <TableHead scope="col" className="text-end">
+                    {t("table.action")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium tabular-nums">{order.number}</TableCell>
+                    <TableCell className="font-medium">{order.customer}</TableCell>
+                    <TableCell className="text-muted-foreground">{order.issue}</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{order.amount}</TableCell>
+                    <TableCell className="text-muted-foreground">{order.updatedAt}</TableCell>
+                    <TableCell className="text-end">
+                      <Button
+                        disabled={!ready}
+                        onClick={() => act(order)}
+                        className="h-8 gap-1.5 px-3 text-xs"
+                      >
+                        {t(order.state)}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:hidden">
+            {data.map((order) => (
+              <li key={order.id}>
+                <NeedActionCard order={order} disabled={!ready} onAction={() => act(order)} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {!ready && <ContentSkeleton columns={6} />}
+      {ready && !data.length && <AppState icon={CircleCheck} title={t("empty")} className="py-8" />}
       {(!storageAvailable || failed) && <ActionFeedback kind="error" message={t("actionFailed")} />}
       <OrderDetails
         order={

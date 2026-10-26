@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { FileQuestion } from "lucide-react";
 import { AppState } from "@/components/shared";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigations";
@@ -7,6 +8,7 @@ export default async function NotFound() {
   return (
     <main className="mx-auto w-full max-w-2xl p-4 py-16">
       <AppState
+        icon={FileQuestion}
         title={t("notFoundTitle")}
         description={t("notFoundDescription")}
         action={
